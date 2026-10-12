@@ -1,15 +1,779 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DrawLab | Football Draw Intelligence</title><style>
-:root{font-family:Inter,system-ui,Arial,sans-serif;color:#e8eef8;background:#0b1220}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101f32);min-height:100vh}header{border-bottom:1px solid #26374a;background:#101b2b;padding:18px max(20px,calc((100vw - 1200px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.brand{font-weight:800;font-size:23px}.brand span{color:#42d5ac}.shell{max-width:1200px;margin:30px auto;padding:0 18px}.intro{margin-bottom:24px}.intro h1{margin:0 0 8px;font-size:clamp(26px,4vw,40px)}.muted{color:#9bb0c8}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:20px}.panel{background:#142338;border:1px solid #2b4159;border-radius:16px;padding:23px;margin-bottom:20px;box-shadow:0 12px 30px #0002}h2{font-size:20px;margin:0 0 16px}h3{font-size:16px;margin:16px 0 10px}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{display:flex;flex-direction:column;gap:6px}.field.wide{grid-column:1/-1}label{font-size:13px;color:#b7c8dd}input,select{width:100%;background:#0d1929;color:#fff;border:1px solid #38506a;border-radius:9px;padding:11px;font:inherit;min-width:0}input:focus{outline:2px solid #30bfa0;outline-offset:1px}button{background:#29c49c;color:#06231b;border:0;padding:11px 16px;border-radius:9px;font:inherit;font-weight:750;cursor:pointer}button.secondary{background:#273b51;color:#e8eef8}button.danger{background:#703849;color:#fff}button:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.pill{font-size:12px;background:#1b4550;color:#74ead0;border-radius:100px;padding:5px 10px}.metric{font-size:46px;font-weight:850;color:#59e6bd;margin:10px 0}.probrow{display:grid;grid-template-columns:85px 1fr 58px;gap:8px;align-items:center;margin:14px 0;font-size:13px}.track{height:12px;background:#25394d;border-radius:20px;overflow:hidden}.fill{height:100%;background:#5d8ef0}.fill.draw{background:#36d3a6}.fill.away{background:#e2a86a}.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.score{background:#0c1a2a;padding:13px;text-align:center;border-radius:10px}.score strong{display:block;font-size:20px}.score small{color:#9bb0c8}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;border-bottom:1px solid #2c4258;padding:11px 8px}th{color:#a6bad2}table button{padding:7px 9px;font-size:12px}.scroll{overflow-x:auto}.notice{border-left:3px solid #36d3a6;padding:10px 13px;background:#0c2430;color:#c3e3e2;font-size:13px;margin-top:15px}.status{min-height:22px;font-size:13px;color:#b6d0e5}.hidden{display:none!important}.auth{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.auth input{width:160px}.auth button{padding:10px}.full{grid-column:1/-1}footer{padding:20px 0 40px;color:#879eb6;font-size:12px}@media(max-width:850px){.grid{grid-template-columns:1fr}.auth input{width:140px}}@media(max-width:520px){.fields{grid-template-columns:1fr}.scores{grid-template-columns:repeat(3,minmax(0,1fr))}.panel{padding:16px}}
-</style></head><body><header><div class="brand">⚽ Draw<span>Lab</span></div><div class="auth"><span id="identity" class="muted">Local mode</span><input id="email" type="email" placeholder="Email" autocomplete="email"><input id="password" type="password" placeholder="Password" autocomplete="current-password"><button id="login" class="secondary">Sign in</button><button id="signup" class="secondary">Sign up</button><button id="logout" class="secondary hidden">Sign out</button></div></header><main class="shell"><section class="intro"><h1>Football Draw Intelligence</h1><p class="muted">Calculate, rank and review draw predictions with a Poisson + Dixon–Coles model. No outcome is guaranteed.</p></section><div class="grid"><section><div class="panel"><h2>Match and team statistics</h2><div class="fields"><div class="field"><label for="home">Home team</label><input id="home" placeholder="e.g. Arsenal" maxlength="100"></div><div class="field"><label for="away">Away team</label><input id="away" placeholder="e.g. Chelsea" maxlength="100"></div><div class="field"><label for="league">Competition</label><input id="league" placeholder="e.g. Premier League" maxlength="100"></div><div class="field"><label for="kickoff">Kickoff (optional)</label><input id="kickoff" type="datetime-local"></div><div class="field"><label for="homeScored">Home goals scored per home match</label><input id="homeScored" type="number" min="0" max="10" step="0.01" value="1.35"></div><div class="field"><label for="homeConceded">Home goals conceded per home match</label><input id="homeConceded" type="number" min="0" max="10" step="0.01" value="1.10"></div><div class="field"><label for="awayScored">Away goals scored per away match</label><input id="awayScored" type="number" min="0" max="10" step="0.01" value="1.15"></div><div class="field"><label for="awayConceded">Away goals conceded per away match</label><input id="awayConceded" type="number" min="0" max="10" step="0.01" value="1.25"></div><div class="field"><label for="leagueHome">League home goals average</label><input id="leagueHome" type="number" min="0.1" max="10" step="0.01" value="1.50"></div><div class="field"><label for="leagueAway">League away goals average</label><input id="leagueAway" type="number" min="0.1" max="10" step="0.01" value="1.20"></div><div class="field"><label for="homeXg">Home xG per home match (optional)</label><input id="homeXg" type="number" min="0" max="10" step="0.01" placeholder="Not available"></div><div class="field"><label for="awayXg">Away xG per away match (optional)</label><input id="awayXg" type="number" min="0" max="10" step="0.01" placeholder="Not available"></div><div class="field"><label for="rho">Dixon–Coles rho</label><input id="rho" type="number" min="-0.2" max="0.2" step="0.01" value="-0.10"></div><div class="field"><label for="xgWeight">xG blending weight (%)</label><input id="xgWeight" type="number" min="0" max="100" step="5" value="30"></div></div><div class="notice">Use home-only and away-only statistics from the same competition and period. The default rho is illustrative, not fitted to a league. Optional xG blends each team's attacking xG with its goal-based estimate; it does not model opponent xGA.</div><div class="actions"><button id="calculate">Calculate probabilities</button><button id="save" class="secondary">Save prediction</button><button id="reset" class="secondary">Reset</button></div><p id="message" class="status" role="status" aria-live="polite"></p></div></section><section><div class="panel"><h2>Prediction dashboard</h2><span class="pill" id="modelTag">Dixon–Coles adjusted</span><div class="muted" style="margin-top:17px">Probability of a draw</div><div class="metric" id="drawProbability">—</div><div id="probabilities"></div><h3>Most likely drawn scores</h3><div class="scores" id="drawScores"><div class="muted">Calculate a match to see scores.</div></div><p id="expected" class="muted"></p><div class="notice">These are statistical estimates, not verified predictions. Assess calibration using completed matches before relying on the model.</div></div><div class="panel"><h2>Supabase connection</h2><div class="field"><label for="sbUrl">Project URL</label><input id="sbUrl" placeholder="https://project.supabase.co"></div><div class="field" style="margin-top:12px"><label for="sbKey">Publishable / anon key (never service_role)</label><input id="sbKey" type="password" placeholder="sb_publishable_... or anon JWT"></div><div class="actions"><button id="connect">Connect Supabase</button><button id="disconnect" class="secondary">Disconnect</button></div><p class="muted" style="font-size:12px">Connection settings stay in this browser's local storage. Only predictions saved while signed in sync to Supabase.</p><p id="connection" class="status" role="status"></p></div></section><section class="full panel"><h2>Automatic football fixtures &amp; draw ranking</h2><p class="muted">Import scheduled matches and recent league results securely through a Supabase Edge Function. Goals-based estimates are computed from finished matches; xG is not supplied by this provider. Requires sign-in and a deployed Edge Function.</p><div class="fields"><div class="field"><label for="competitionCode">Competition</label><select id="competitionCode" style="width:100%;padding:12px;background:#101b2b;color:#e8eef8;border:1px solid #40546b;border-radius:8px"><option value="PL">Premier League</option><option value="PD">La Liga</option><option value="BL1">Bundesliga</option><option value="SA">Serie A</option><option value="FL1">Ligue 1</option><option value="DED">Eredivisie</option><option value="PPL">Primeira Liga</option><option value="CL">Champions League</option><option value="EC">European Championship</option><option value="WC">World Cup</option><option value="BSA">Brazil Série A</option><option value="ELC">English Championship</option><option value="EL1">English League One</option><option value="EL2">English League Two</option></select></div><div class="field"><label for="lookahead">Upcoming days</label><input id="lookahead" type="number" min="1" max="30" value="7"></div></div><div class="actions"><button id="fetchFixtures">Fetch fixtures &amp; rank draws</button><button class="secondary" id="refreshCompetitions">Load available competitions</button></div><p id="fixtureStatus" class="status" role="status" aria-live="polite"></p><div class="scroll"><table><thead><tr><th>Kickoff</th><th>Fixture</th><th>Draw probability</th><th>Expected goals</th><th>Evidence</th><th>Action</th></tr></thead><tbody id="fixturesList"><tr><td colspan="6" class="muted">Connect Supabase, sign in and fetch fixtures.</td></tr></tbody></table></div></section><section class="full panel"><h2>Saved predictions and ranking</h2><p class="muted">Predictions are sorted by estimated draw probability. Sign in to synchronize your records to Supabase.</p><div class="scroll"><table><thead><tr><th>Fixture</th><th>Competition</th><th>Draw %</th><th>Expected goals</th><th>Result</th><th>Action</th></tr></thead><tbody id="history"><tr><td colspan="6" class="muted">No saved predictions yet.</td></tr></tbody></table></div></section></div><section class="full panel"><h2>Draw marketplace · Free and premium</h2><p class="muted">Customers can browse published matches. Paid analyses remain protected until payment is verified. Requests are not payments.</p><div class="fields"><div class="field"><label for="marketSearch">Search teams or leagues</label><input id="marketSearch" placeholder="Search predictions"></div><div class="field"><label for="marketFilter">Access</label><select id="marketFilter"><option value="all">All published</option><option value="free">Free</option><option value="paid">Premium</option><option value="unlocked">My unlocked</option></select></div></div><div class="actions"><button id="browseMarket">Refresh marketplace</button><button id="myOrders" class="secondary">My orders</button></div><p id="marketStatus" class="status"></p><div id="pesajetCheckout" class="panel hidden" style="margin:14px 0"><h3>Secure mobile money checkout</h3><p id="pesajetProduct" class="muted"></p><div class="fields"><div class="field"><label>Mobile money provider</label><select id="pesajetProvider"><option value="mtn">MTN Mobile Money</option><option value="airtel">Airtel Money</option></select></div><div class="field"><label>Uganda mobile money number</label><input id="pesajetPhone" type="tel" placeholder="+256771234567"></div></div><div class="actions"><button id="pesajetPay">Request mobile money payment</button><button class="secondary" id="pesajetCancel">Cancel</button><button class="secondary" id="pesajetCheck">Check payment status</button></div><p id="pesajetStatus" class="status" role="status"></p></div><div class="scroll"><table><thead><tr><th>League / match</th><th>Kickoff</th><th>Access</th><th>Prediction</th><th>Action</th></tr></thead><tbody id="marketRows"></tbody></table></div></section><section class="full panel hidden" id="adminPanel"><h2>Super Admin Control Centre</h2><p class="muted">Manage league availability, premium prices, match predictions and verified orders. Administrative privileges are checked in Supabase.</p><h3>Create league</h3><div class="fields"><div class="field"><label>League name</label><input id="admLeagueName" placeholder="League name"></div><div class="field"><label>Country</label><input id="admCountry" placeholder="Country"></div><div class="field"><label>Access</label><select id="admLeagueMode"><option value="free">Free</option><option value="paid">Paid</option><option value="hidden">Hidden</option></select></div><div class="field"><label>Price UGX</label><input id="admLeaguePrice" type="number" min="0" value="5000"></div></div><button id="createLeague">Create league</button><h3>Manage leagues</h3><p class="muted">A paid league unlocks all eligible published predictions in that league. Match-level free overrides remain free.</p><div id="adminLeagues"></div><h3>Business overview</h3><div id="businessMetrics" class="scores"></div><h3>Publish a match</h3><div class="fields"><div class="field"><label>League</label><select id="admLeagueSelect"></select></div><div class="field"><label>Home</label><input id="admHome"></div><div class="field"><label>Away</label><input id="admAway"></div><div class="field"><label>Kickoff</label><input id="admKickoff" type="datetime-local"></div><div class="field"><label>Draw probability (0–1)</label><input id="admProbability" type="number" min="0" max="1" step="0.0001"></div><div class="field"><label>Predicted score</label><input id="admScore" placeholder="1-1"></div><div class="field"><label>Access override</label><select id="admMode"><option value="inherit">Inherit league</option><option value="free">Free</option><option value="paid">Paid</option><option value="hidden">Hidden</option></select></div><div class="field"><label>Price UGX</label><input id="admPrice" type="number" min="0" value="5000"></div></div><div class="field"><label>Private analysis (revealed only after access)</label><textarea id="admAnalysis" rows="3" style="width:100%"></textarea></div><button id="publishTip">Publish match</button><h3>Manage published matches</h3><div id="adminTips"></div><h3>Orders · PesaJet verified payments and manual review</h3><div id="adminOrders"></div><p id="adminStatus" class="status"></p></section><footer>DrawLab · Model version 1 · For analytical and educational use. Results do not guarantee betting success.</footer><section class="panel" id="setupBundle"><h2>Deployment &amp; Database Setup</h2>
-<p class="muted">This single HTML file contains the complete browser app and embedded deployment sources. Supabase database policies and Edge Functions still run on Supabase servers; HTML alone cannot securely execute payment secrets or webhooks.</p>
-<div class="actions"><button class="secondary" onclick="drawlabCopy('schema')">Copy complete SQL schema</button><button class="secondary" onclick="drawlabDownload('schema','schema.sql')">Download schema.sql</button></div>
-<p class="muted">Run the SQL in Supabase SQL Editor on a new project, then assign your own authenticated UUID to the admins table from the SQL Editor. Review the SQL before applying it to an existing project.</p>
-<div class="actions">
-<button class="secondary" onclick="drawlabDownload('football','index.ts')">Football function</button>
-<button class="secondary" onclick="drawlabDownload('checkout','index.ts')">PesaJet checkout function</button>
-<button class="secondary" onclick="drawlabDownload('webhook','index.ts')">PesaJet webhook function</button></div>
-<p class="muted">Deploy each downloaded index.ts into a Supabase Edge Function named football-fixtures, pesajet-checkout, or pesajet-webhook. Configure provider secrets on the server, never in this HTML. PesaJet requires sandbox verification of API and webhook formats and approval of your domains/server IPs before live use.</p>
-<p id="setupFeedback" class="status" role="status"></p></section></main><script type="module">
+<!--
+  DrawLab Professional Edition
+  ------------------------------------------------------------
+  Source: user-provided DrawLab HTML
+  Scope: professional UI, consistent formatting, accessibility,
+         explanatory comments and preserved application behavior.
+
+  SECURITY:
+  - Only Supabase RLS / verified RPCs grant privileged access.
+  - PesaJet secrets and payment verification belong on the server.
+  - The HTML contains embedded deployment source, not a backend.
+  ------------------------------------------------------------
+-->
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   DrawLab | Football Draw Intelligence
+  </title>
+  <style>
+   :root{font-family:Inter,system-ui,Arial,sans-serif;color:#e8eef8;background:#0b1220}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101f32);min-height:100vh}header{border-bottom:1px solid #26374a;background:#101b2b;padding:18px max(20px,calc((100vw - 1200px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.brand{font-weight:800;font-size:23px}.brand span{color:#42d5ac}.shell{max-width:1200px;margin:30px auto;padding:0 18px}.intro{margin-bottom:24px}.intro h1{margin:0 0 8px;font-size:clamp(26px,4vw,40px)}.muted{color:#9bb0c8}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:20px}.panel{background:#142338;border:1px solid #2b4159;border-radius:16px;padding:23px;margin-bottom:20px;box-shadow:0 12px 30px #0002}h2{font-size:20px;margin:0 0 16px}h3{font-size:16px;margin:16px 0 10px}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{display:flex;flex-direction:column;gap:6px}.field.wide{grid-column:1/-1}label{font-size:13px;color:#b7c8dd}input,select{width:100%;background:#0d1929;color:#fff;border:1px solid #38506a;border-radius:9px;padding:11px;font:inherit;min-width:0}input:focus{outline:2px solid #30bfa0;outline-offset:1px}button{background:#29c49c;color:#06231b;border:0;padding:11px 16px;border-radius:9px;font:inherit;font-weight:750;cursor:pointer}button.secondary{background:#273b51;color:#e8eef8}button.danger{background:#703849;color:#fff}button:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.pill{font-size:12px;background:#1b4550;color:#74ead0;border-radius:100px;padding:5px 10px}.metric{font-size:46px;font-weight:850;color:#59e6bd;margin:10px 0}.probrow{display:grid;grid-template-columns:85px 1fr 58px;gap:8px;align-items:center;margin:14px 0;font-size:13px}.track{height:12px;background:#25394d;border-radius:20px;overflow:hidden}.fill{height:100%;background:#5d8ef0}.fill.draw{background:#36d3a6}.fill.away{background:#e2a86a}.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.score{background:#0c1a2a;padding:13px;text-align:center;border-radius:10px}.score strong{display:block;font-size:20px}.score small{color:#9bb0c8}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;border-bottom:1px solid #2c4258;padding:11px 8px}th{color:#a6bad2}table button{padding:7px 9px;font-size:12px}.scroll{overflow-x:auto}.notice{border-left:3px solid #36d3a6;padding:10px 13px;background:#0c2430;color:#c3e3e2;font-size:13px;margin-top:15px}.status{min-height:22px;font-size:13px;color:#b6d0e5}.hidden{display:none!important}.auth{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.auth input{width:160px}.auth button{padding:10px}.full{grid-column:1/-1}footer{padding:20px 0 40px;color:#879eb6;font-size:12px}@media(max-width:850px){.grid{grid-template-columns:1fr}.auth input{width:140px}}@media(max-width:520px){.fields{grid-template-columns:1fr}.scores{grid-template-columns:repeat(3,minmax(0,1fr))}.panel{padding:16px}}
+   /* ======================================================================
+   DRAWLAB DESIGN SYSTEM — Professional presentation layer
+   The original selectors, element IDs, JavaScript and backend interfaces
+   remain intact. These styles refine layout, typography and accessibility.
+   ====================================================================== */
+:root {
+  --dl-bg: #091321;
+  --dl-surface: #142338;
+  --dl-border: #2b4159;
+  --dl-accent: #31d0a5;
+  --dl-text: #ecf5ff;
+  --dl-muted: #b3c4d7;
+  color-scheme: dark;
+}
+html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+body { color: var(--dl-text); background: radial-gradient(circle at 85% 0%,#173b46 0%,transparent 32%),linear-gradient(145deg,#091321,#102035); }
+header { position: relative; z-index: 2; backdrop-filter: blur(12px); }
+.workspace-nav {
+  position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap;
+  gap: 4px; padding: 11px max(18px,calc((100vw - 1200px)/2));
+  border-bottom: 1px solid #294155; background: rgba(9,21,34,.95);
+  backdrop-filter: blur(14px);
+}
+.workspace-nav a {
+  color: #c0d5e4; text-decoration: none; padding: 9px 13px;
+  border-radius: 9px; font-size: 13px; font-weight: 650;
+  transition: background .2s ease,color .2s ease;
+}
+.workspace-nav a:hover,.workspace-nav a:focus-visible { color: #fff; background: #1d3d4d; }
+.shell { margin-top: 34px; }
+.intro { padding: 17px 0 10px; }
+.intro h1 { letter-spacing: -.045em; max-width: 780px; line-height: 1.15; }
+.intro p { font-size: 15px; line-height: 1.7; max-width: 800px; }
+.eyebrow { display: inline-block; font-size: 11px; letter-spacing: .14em; font-weight: 850; color: #76e6c9; margin-bottom: 12px; }
+.panel { background: linear-gradient(150deg,#15283c,#122236); border: 1px solid #2a4357; box-shadow: 0 18px 40px rgba(0,0,0,.13); }
+.panel h2 { font-size: 19px; letter-spacing: -.02em; }
+.panel h3 { margin-top: 25px; }
+label { font-weight: 600; }
+input,select,textarea { font-size: 14px; transition: border-color .15s, box-shadow .15s; }
+textarea { background: #0d1929; color: #fff; border: 1px solid #38506a; border-radius: 9px; padding: 12px; font: inherit; }
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible { outline: 2px solid #56e3c0; outline-offset: 2px; }
+button { transition: filter .16s,transform .16s; }
+button:hover:not(:disabled) { filter: brightness(1.11); transform: translateY(-1px); }
+button:active:not(:disabled) { transform: translateY(0); }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: .055em; }
+td { line-height: 1.55; vertical-align: top; }
+tr:hover td { background: rgba(255,255,255,.025); }
+.notice { line-height: 1.65; border-radius: 0 9px 9px 0; }
+.status { line-height: 1.6; overflow-wrap: anywhere; }
+#adminPanel { border-color: #2b655a; }
+#adminPanel > h2::before { content: "◆ "; color: #52dcb8; }
+#setupBundle { border-style: dashed; }
+#businessMetrics { line-height: 1.8; }
+#marketRows td:nth-child(4) { min-width: 180px; }
+@media(max-width:700px) {
+  .workspace-nav { overflow-x: auto; flex-wrap: nowrap; white-space: nowrap; padding: 8px 12px; }
+  .workspace-nav a { padding: 9px 11px; }
+  header { padding: 16px; }
+  .auth { width: 100%; }
+  .auth input { flex: 1 1 135px; }
+  .intro h1 { font-size: 29px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  html { scroll-behavior: auto; }
+  button,.workspace-nav a,input { transition: none; }
+}
+  </style>
+ </head>
+ <body>
+  <header>
+   <div class="brand">
+    ⚽ Draw
+    <span>
+     Lab
+    </span>
+   </div>
+   <div class="auth">
+    <span class="muted" id="identity">
+     Local mode
+    </span>
+    <input autocomplete="email" id="email" placeholder="Email" type="email"/>
+    <input autocomplete="current-password" id="password" placeholder="Password" type="password"/>
+    <button class="secondary" id="login">
+     Sign in
+    </button>
+    <button class="secondary" id="signup">
+     Sign up
+    </button>
+    <button class="secondary hidden" id="logout">
+     Sign out
+    </button>
+   </div>
+  </header>
+  <nav aria-label="Application sections" class="workspace-nav">
+   <a href="#workspace">
+    Overview
+   </a>
+   <a href="#predictionWorkspace">
+    Prediction model
+   </a>
+   <a href="#fixtureWorkspace">
+    Fixtures
+   </a>
+   <a href="#historyWorkspace">
+    History
+   </a>
+   <a href="#marketplaceWorkspace">
+    Premium tips
+   </a>
+   <a href="#adminPanel">
+    Super Admin
+   </a>
+   <a href="#setupBundle">
+    Deployment
+   </a>
+  </nav>
+  <main class="shell" id="workspace">
+   <section class="intro">
+    <span class="eyebrow">
+     DRAWLAB • FOOTBALL ANALYTICS
+    </span>
+    <h1>
+     Football intelligence, professionally delivered.
+    </h1>
+    <p class="muted">
+     Explore football fixtures, model match outcomes, and access published predictions. Premium insights are available only after verified access.
+    </p>
+   </section>
+   <div class="grid">
+    <section id="predictionWorkspace">
+     <div class="panel">
+      <h2>
+       Match and team statistics
+      </h2>
+      <div class="fields">
+       <div class="field">
+        <label for="home">
+         Home team
+        </label>
+        <input id="home" maxlength="100" placeholder="e.g. Arsenal"/>
+       </div>
+       <div class="field">
+        <label for="away">
+         Away team
+        </label>
+        <input id="away" maxlength="100" placeholder="e.g. Chelsea"/>
+       </div>
+       <div class="field">
+        <label for="league">
+         Competition
+        </label>
+        <input id="league" maxlength="100" placeholder="e.g. Premier League"/>
+       </div>
+       <div class="field">
+        <label for="kickoff">
+         Kickoff (optional)
+        </label>
+        <input id="kickoff" type="datetime-local"/>
+       </div>
+       <div class="field">
+        <label for="homeScored">
+         Home goals scored per home match
+        </label>
+        <input id="homeScored" max="10" min="0" step="0.01" type="number" value="1.35"/>
+       </div>
+       <div class="field">
+        <label for="homeConceded">
+         Home goals conceded per home match
+        </label>
+        <input id="homeConceded" max="10" min="0" step="0.01" type="number" value="1.10"/>
+       </div>
+       <div class="field">
+        <label for="awayScored">
+         Away goals scored per away match
+        </label>
+        <input id="awayScored" max="10" min="0" step="0.01" type="number" value="1.15"/>
+       </div>
+       <div class="field">
+        <label for="awayConceded">
+         Away goals conceded per away match
+        </label>
+        <input id="awayConceded" max="10" min="0" step="0.01" type="number" value="1.25"/>
+       </div>
+       <div class="field">
+        <label for="leagueHome">
+         League home goals average
+        </label>
+        <input id="leagueHome" max="10" min="0.1" step="0.01" type="number" value="1.50"/>
+       </div>
+       <div class="field">
+        <label for="leagueAway">
+         League away goals average
+        </label>
+        <input id="leagueAway" max="10" min="0.1" step="0.01" type="number" value="1.20"/>
+       </div>
+       <div class="field">
+        <label for="homeXg">
+         Home xG per home match (optional)
+        </label>
+        <input id="homeXg" max="10" min="0" placeholder="Not available" step="0.01" type="number"/>
+       </div>
+       <div class="field">
+        <label for="awayXg">
+         Away xG per away match (optional)
+        </label>
+        <input id="awayXg" max="10" min="0" placeholder="Not available" step="0.01" type="number"/>
+       </div>
+       <div class="field">
+        <label for="rho">
+         Dixon–Coles rho
+        </label>
+        <input id="rho" max="0.2" min="-0.2" step="0.01" type="number" value="-0.10"/>
+       </div>
+       <div class="field">
+        <label for="xgWeight">
+         xG blending weight (%)
+        </label>
+        <input id="xgWeight" max="100" min="0" step="5" type="number" value="30"/>
+       </div>
+      </div>
+      <div class="notice">
+       Use home-only and away-only statistics from the same competition and period. The default rho is illustrative, not fitted to a league. Optional xG blends each team's attacking xG with its goal-based estimate; it does not model opponent xGA.
+      </div>
+      <div class="actions">
+       <button id="calculate">
+        Calculate probabilities
+       </button>
+       <button class="secondary" id="save">
+        Save prediction
+       </button>
+       <button class="secondary" id="reset">
+        Reset
+       </button>
+      </div>
+      <p aria-live="polite" class="status" id="message" role="status">
+      </p>
+     </div>
+    </section>
+    <section>
+     <div class="panel">
+      <h2>
+       Prediction dashboard
+      </h2>
+      <span class="pill" id="modelTag">
+       Dixon–Coles adjusted
+      </span>
+      <div class="muted" style="margin-top:17px">
+       Probability of a draw
+      </div>
+      <div class="metric" id="drawProbability">
+       —
+      </div>
+      <div id="probabilities">
+      </div>
+      <h3>
+       Most likely drawn scores
+      </h3>
+      <div class="scores" id="drawScores">
+       <div class="muted">
+        Calculate a match to see scores.
+       </div>
+      </div>
+      <p class="muted" id="expected">
+      </p>
+      <div class="notice">
+       These are statistical estimates, not verified predictions. Assess calibration using completed matches before relying on the model.
+      </div>
+     </div>
+     <div class="panel">
+      <h2>
+       Supabase connection
+      </h2>
+      <div class="field">
+       <label for="sbUrl">
+        Project URL
+       </label>
+       <input id="sbUrl" placeholder="https://project.supabase.co"/>
+      </div>
+      <div class="field" style="margin-top:12px">
+       <label for="sbKey">
+        Publishable / anon key (never service_role)
+       </label>
+       <input id="sbKey" placeholder="sb_publishable_... or anon JWT" type="password"/>
+      </div>
+      <div class="actions">
+       <button id="connect">
+        Connect Supabase
+       </button>
+       <button class="secondary" id="disconnect">
+        Disconnect
+       </button>
+      </div>
+      <p class="muted" style="font-size:12px">
+       Connection settings stay in this browser's local storage. Only predictions saved while signed in sync to Supabase.
+      </p>
+      <p class="status" id="connection" role="status">
+      </p>
+     </div>
+    </section>
+    <section class="full panel" id="fixtureWorkspace">
+     <h2>
+      Automatic football fixtures &amp; draw ranking
+     </h2>
+     <p class="muted">
+      Import scheduled matches and recent league results securely through a Supabase Edge Function. Goals-based estimates are computed from finished matches; xG is not supplied by this provider. Requires sign-in and a deployed Edge Function.
+     </p>
+     <div class="fields">
+      <div class="field">
+       <label for="competitionCode">
+        Competition
+       </label>
+       <select id="competitionCode" style="width:100%;padding:12px;background:#101b2b;color:#e8eef8;border:1px solid #40546b;border-radius:8px">
+        <option value="PL">
+         Premier League
+        </option>
+        <option value="PD">
+         La Liga
+        </option>
+        <option value="BL1">
+         Bundesliga
+        </option>
+        <option value="SA">
+         Serie A
+        </option>
+        <option value="FL1">
+         Ligue 1
+        </option>
+        <option value="DED">
+         Eredivisie
+        </option>
+        <option value="PPL">
+         Primeira Liga
+        </option>
+        <option value="CL">
+         Champions League
+        </option>
+        <option value="EC">
+         European Championship
+        </option>
+        <option value="WC">
+         World Cup
+        </option>
+        <option value="BSA">
+         Brazil Série A
+        </option>
+        <option value="ELC">
+         English Championship
+        </option>
+        <option value="EL1">
+         English League One
+        </option>
+        <option value="EL2">
+         English League Two
+        </option>
+       </select>
+      </div>
+      <div class="field">
+       <label for="lookahead">
+        Upcoming days
+       </label>
+       <input id="lookahead" max="30" min="1" type="number" value="7"/>
+      </div>
+     </div>
+     <div class="actions">
+      <button id="fetchFixtures">
+       Fetch fixtures &amp; rank draws
+      </button>
+      <button class="secondary" id="refreshCompetitions">
+       Load available competitions
+      </button>
+     </div>
+     <p aria-live="polite" class="status" id="fixtureStatus" role="status">
+     </p>
+     <div class="scroll">
+      <table>
+       <thead>
+        <tr>
+         <th>
+          Kickoff
+         </th>
+         <th>
+          Fixture
+         </th>
+         <th>
+          Draw probability
+         </th>
+         <th>
+          Expected goals
+         </th>
+         <th>
+          Evidence
+         </th>
+         <th>
+          Action
+         </th>
+        </tr>
+       </thead>
+       <tbody id="fixturesList">
+        <tr>
+         <td class="muted" colspan="6">
+          Connect Supabase, sign in and fetch fixtures.
+         </td>
+        </tr>
+       </tbody>
+      </table>
+     </div>
+    </section>
+    <section class="full panel" id="historyWorkspace">
+     <h2>
+      Saved predictions and ranking
+     </h2>
+     <p class="muted">
+      Predictions are sorted by estimated draw probability. Sign in to synchronize your records to Supabase.
+     </p>
+     <div class="scroll">
+      <table>
+       <thead>
+        <tr>
+         <th>
+          Fixture
+         </th>
+         <th>
+          Competition
+         </th>
+         <th>
+          Draw %
+         </th>
+         <th>
+          Expected goals
+         </th>
+         <th>
+          Result
+         </th>
+         <th>
+          Action
+         </th>
+        </tr>
+       </thead>
+       <tbody id="history">
+        <tr>
+         <td class="muted" colspan="6">
+          No saved predictions yet.
+         </td>
+        </tr>
+       </tbody>
+      </table>
+     </div>
+    </section>
+   </div>
+   <section class="full panel" id="marketplaceWorkspace">
+    <h2>
+     Draw marketplace · Free and premium
+    </h2>
+    <p class="muted">
+     Customers can browse published matches. Paid analyses remain protected until payment is verified. Requests are not payments.
+    </p>
+    <div class="fields">
+     <div class="field">
+      <label for="marketSearch">
+       Search teams or leagues
+      </label>
+      <input id="marketSearch" placeholder="Search predictions"/>
+     </div>
+     <div class="field">
+      <label for="marketFilter">
+       Access
+      </label>
+      <select id="marketFilter">
+       <option value="all">
+        All published
+       </option>
+       <option value="free">
+        Free
+       </option>
+       <option value="paid">
+        Premium
+       </option>
+       <option value="unlocked">
+        My unlocked
+       </option>
+      </select>
+     </div>
+    </div>
+    <div class="actions">
+     <button id="browseMarket">
+      Refresh marketplace
+     </button>
+     <button class="secondary" id="myOrders">
+      My orders
+     </button>
+    </div>
+    <p class="status" id="marketStatus">
+    </p>
+    <div class="panel hidden" id="pesajetCheckout" style="margin:14px 0">
+     <h3>
+      Secure mobile money checkout
+     </h3>
+     <p class="muted" id="pesajetProduct">
+     </p>
+     <div class="fields">
+      <div class="field">
+       <label>
+        Mobile money provider
+       </label>
+       <select id="pesajetProvider">
+        <option value="mtn">
+         MTN Mobile Money
+        </option>
+        <option value="airtel">
+         Airtel Money
+        </option>
+       </select>
+      </div>
+      <div class="field">
+       <label>
+        Uganda mobile money number
+       </label>
+       <input id="pesajetPhone" placeholder="+256771234567" type="tel"/>
+      </div>
+     </div>
+     <div class="actions">
+      <button id="pesajetPay">
+       Request mobile money payment
+      </button>
+      <button class="secondary" id="pesajetCancel">
+       Cancel
+      </button>
+      <button class="secondary" id="pesajetCheck">
+       Check payment status
+      </button>
+     </div>
+     <p class="status" id="pesajetStatus" role="status">
+     </p>
+    </div>
+    <div class="scroll">
+     <table>
+      <thead>
+       <tr>
+        <th>
+         League / match
+        </th>
+        <th>
+         Kickoff
+        </th>
+        <th>
+         Access
+        </th>
+        <th>
+         Prediction
+        </th>
+        <th>
+         Action
+        </th>
+       </tr>
+      </thead>
+      <tbody id="marketRows">
+      </tbody>
+     </table>
+    </div>
+   </section>
+   <section aria-label="Super Administrator Control Centre" class="full panel hidden" id="adminPanel">
+    <h2>
+     Super Admin Control Centre
+    </h2>
+    <p class="muted">
+     Administrative workspace: manage league access, published predictions, pricing, orders and visibility. Permissions are verified server-side by Supabase.
+    </p>
+    <h3>
+     Create league
+    </h3>
+    <div class="fields">
+     <div class="field">
+      <label>
+       League name
+      </label>
+      <input id="admLeagueName" placeholder="League name"/>
+     </div>
+     <div class="field">
+      <label>
+       Country
+      </label>
+      <input id="admCountry" placeholder="Country"/>
+     </div>
+     <div class="field">
+      <label>
+       Access
+      </label>
+      <select id="admLeagueMode">
+       <option value="free">
+        Free
+       </option>
+       <option value="paid">
+        Paid
+       </option>
+       <option value="hidden">
+        Hidden
+       </option>
+      </select>
+     </div>
+     <div class="field">
+      <label>
+       Price UGX
+      </label>
+      <input id="admLeaguePrice" min="0" type="number" value="5000"/>
+     </div>
+    </div>
+    <button id="createLeague">
+     Create league
+    </button>
+    <h3>
+     Manage leagues
+    </h3>
+    <p class="muted">
+     A paid league unlocks all eligible published predictions in that league. Match-level free overrides remain free.
+    </p>
+    <div id="adminLeagues">
+    </div>
+    <h3>
+     Business overview
+    </h3>
+    <div class="scores" id="businessMetrics">
+    </div>
+    <h3>
+     Publish a match
+    </h3>
+    <div class="fields">
+     <div class="field">
+      <label>
+       League
+      </label>
+      <select id="admLeagueSelect">
+      </select>
+     </div>
+     <div class="field">
+      <label>
+       Home
+      </label>
+      <input id="admHome"/>
+     </div>
+     <div class="field">
+      <label>
+       Away
+      </label>
+      <input id="admAway"/>
+     </div>
+     <div class="field">
+      <label>
+       Kickoff
+      </label>
+      <input id="admKickoff" type="datetime-local"/>
+     </div>
+     <div class="field">
+      <label>
+       Draw probability (0–1)
+      </label>
+      <input id="admProbability" max="1" min="0" step="0.0001" type="number"/>
+     </div>
+     <div class="field">
+      <label>
+       Predicted score
+      </label>
+      <input id="admScore" placeholder="1-1"/>
+     </div>
+     <div class="field">
+      <label>
+       Access override
+      </label>
+      <select id="admMode">
+       <option value="inherit">
+        Inherit league
+       </option>
+       <option value="free">
+        Free
+       </option>
+       <option value="paid">
+        Paid
+       </option>
+       <option value="hidden">
+        Hidden
+       </option>
+      </select>
+     </div>
+     <div class="field">
+      <label>
+       Price UGX
+      </label>
+      <input id="admPrice" min="0" type="number" value="5000"/>
+     </div>
+    </div>
+    <div class="field">
+     <label>
+      Private analysis (revealed only after access)
+     </label>
+     <textarea id="admAnalysis" rows="3" style="width:100%"></textarea>
+    </div>
+    <button id="publishTip">
+     Publish match
+    </button>
+    <h3>
+     Manage published matches
+    </h3>
+    <div id="adminTips">
+    </div>
+    <h3>
+     Orders · PesaJet verified payments and manual review
+    </h3>
+    <div id="adminOrders">
+    </div>
+    <p class="status" id="adminStatus">
+    </p>
+   </section>
+   <footer>
+    © DrawLab · Statistical football analysis · Probabilities are estimates, never guarantees. Verify payment and provider integrations before production use.
+   </footer>
+   <section class="panel" id="setupBundle">
+    <h2>
+     Deployment &amp; Database Setup
+    </h2>
+    <p class="muted">
+     This single HTML file contains the complete browser app and embedded deployment sources. Supabase database policies and Edge Functions still run on Supabase servers; HTML alone cannot securely execute payment secrets or webhooks.
+    </p>
+    <div class="actions">
+     <button class="secondary" onclick="drawlabCopy('schema')">
+      Copy complete SQL schema
+     </button>
+     <button class="secondary" onclick="drawlabDownload('schema','schema.sql')">
+      Download schema.sql
+     </button>
+    </div>
+    <p class="muted">
+     Run the SQL in Supabase SQL Editor on a new project, then assign your own authenticated UUID to the admins table from the SQL Editor. Review the SQL before applying it to an existing project.
+    </p>
+    <div class="actions">
+     <button class="secondary" onclick="drawlabDownload('football','index.ts')">
+      Football function
+     </button>
+     <button class="secondary" onclick="drawlabDownload('checkout','index.ts')">
+      PesaJet checkout function
+     </button>
+     <button class="secondary" onclick="drawlabDownload('webhook','index.ts')">
+      PesaJet webhook function
+     </button>
+    </div>
+    <p class="muted">
+     Deploy each downloaded index.ts into a Supabase Edge Function named football-fixtures, pesajet-checkout, or pesajet-webhook. Configure provider secrets on the server, never in this HTML. PesaJet requires sandbox verification of API and webhook formats and approval of your domains/server IPs before live use.
+    </p>
+    <p class="status" id="setupFeedback" role="status">
+    </p>
+   </section>
+  </main>
+  
+<!-- Source block 1: retained from original application without logic changes. -->
+<script type="module">
 const $=id=>document.getElementById(id), fields=['home','away','league','kickoff','homeScored','homeConceded','awayScored','awayConceded','leagueHome','leagueAway','homeXg','awayXg','rho','xgWeight'];let client=null,user=null,current=null,history=[];const cfgKey='drawlab_supabase_config',localKey='drawlab_local_predictions';
 const msg=(s,id='message')=>$(id).textContent=s;const fmt=n=>(100*n).toFixed(1)+'%';function poisson(k,lambda){let p=Math.exp(-lambda);for(let i=1;i<=k;i++)p*=lambda/i;return p}function tau(i,j,h,a,r){if(i===0&&j===0)return 1-h*a*r;if(i===0&&j===1)return 1+h*r;if(i===1&&j===0)return 1+a*r;if(i===1&&j===1)return 1-r;return 1}function num(id,optional=false){const v=$(id).value.trim();if(optional&&v==='')return null;if(v==='')throw Error('Enter '+id);const n=Number(v);if(!Number.isFinite(n))throw Error('Invalid '+id);const min=Number($(id).min),max=Number($(id).max);if(n<min||n>max)throw Error(id+' must be between '+min+' and '+max);return n}
 function compute(){const data={};for(const id of fields)data[id]=$(id).value.trim();if(!data.home||!data.away)throw Error('Enter both team names');if(data.home.toLowerCase()===data.away.toLowerCase())throw Error('Choose different teams');const hs=num('homeScored'),hc=num('homeConceded'),as=num('awayScored'),ac=num('awayConceded'),lh=num('leagueHome'),la=num('leagueAway'),hx=num('homeXg',true),ax=num('awayXg',true),rho=num('rho'),w=num('xgWeight')/100;let h=(hs/lh)*(ac/la)*lh,a=(as/la)*(hc/lh)*la;if(hx!==null)h=(1-w)*h+w*hx;if(ax!==null)a=(1-w)*a+w*ax;h=Math.max(.01,Math.min(8,h));a=Math.max(.01,Math.min(8,a));const max=24;let grid=[],sum=0;for(let i=0;i<=max;i++){grid[i]=[];for(let j=0;j<=max;j++){const p=poisson(i,h)*poisson(j,a)*tau(i,j,h,a,rho);if(p<0)throw Error('Dixon–Coles rho makes a score probability negative. Change rho.');grid[i][j]=p;sum+=p}}let home=0,away=0,draw=0,score=[];for(let i=0;i<=max;i++)for(let j=0;j<=max;j++){const p=grid[i][j]/sum;if(i>j)home+=p;else if(j>i)away+=p;else{draw+=p;score.push({label:i+'–'+j,p})}}score.sort((x,y)=>y.p-x.p);return{data,h,a,home,away,draw,score:score.slice(0,3)}}
@@ -54,7 +818,10 @@ $('createLeague').onclick=async()=>{if(!adminMode)return;const name=$('admLeague
 $('publishTip').onclick=async()=>{if(!adminMode)return;const row={league_id:$('admLeagueSelect').value,home_team:$('admHome').value.trim(),away_team:$('admAway').value.trim(),kickoff:$('admKickoff').value?new Date($('admKickoff').value).toISOString():null,draw_probability:$('admProbability').value===''?null:Number($('admProbability').value),predicted_score:$('admScore').value.trim(),analysis:$('admAnalysis').value,access_mode:$('admMode').value,price_ugx:Number($('admPrice').value),published:true};if(!row.league_id||!row.home_team||!row.away_team)return alert('League and both teams required');const {error}=await client.from('tips').insert(row);if(error)alert(error.message);else{await adminRefresh();await marketRefresh()}};
 setInterval(()=>{if(client&&user)checkAdmin().catch(()=>{})},120000);
 const oldInit=initClient;initClient=async function(){await oldInit();await checkAdmin();await marketRefresh()};
-</script><script type="text/plain" id="bundle-schema">-- ===== supabase.sql =====
+</script>
+  
+<!-- Source block 2: retained from original application without logic changes. -->
+<script type="text/plain" id="bundle-schema">-- ===== supabase.sql =====
 -- Run in Supabase SQL Editor. Each user can only access their own predictions.
 create extension if not exists pgcrypto;
 create table if not exists public.predictions (
@@ -190,6 +957,8 @@ revoke insert, update, delete on public.admins from authenticated;
 grant select on public.admins to authenticated;
 -- RLS for reading admins remains restricted.
 </script>
+  
+<!-- Source block 3: retained from original application without logic changes. -->
 <script type="text/plain" id="bundle-football">import { createClient } from &#x27;https://esm.sh/@supabase/supabase-js@2&#x27;;
 const cors = { &#x27;Access-Control-Allow-Origin&#x27;: &#x27;*&#x27;, &#x27;Access-Control-Allow-Headers&#x27;: &#x27;authorization, x-client-info, apikey, content-type&#x27;, &#x27;Access-Control-Allow-Methods&#x27;: &#x27;GET, OPTIONS&#x27; };
 const validCode = (v:string)=&gt;/^[A-Z0-9]{2,8}$/.test(v);
@@ -220,6 +989,8 @@ Deno.serve(async req =&gt; {
   }catch(e){return respond({error:&#x27;Provider request failed: &#x27;+(e instanceof Error?e.message:&#x27;unknown error&#x27;)},502)}
 });
 </script>
+  
+<!-- Source block 4: retained from original application without logic changes. -->
 <script type="text/plain" id="bundle-checkout">import { serve } from &quot;https://deno.land/std@0.224.0/http/server.ts&quot;;
 import { createClient } from &quot;npm:@supabase/supabase-js@2&quot;;
 import { PesaJet } from &quot;npm:@pesajet/sdk@1.0.3&quot;;
@@ -272,6 +1043,8 @@ serve(async(req)=&gt;{
  }catch(e){console.error(&#x27;PesaJet checkout error&#x27;,e);return json({error:&#x27;Unable to process payment. Please retry or contact support.&#x27;},500)}
 });
 </script>
+  
+<!-- Source block 5: retained from original application without logic changes. -->
 <script type="text/plain" id="bundle-webhook">import { serve } from &quot;https://deno.land/std@0.224.0/http/server.ts&quot;;
 import { createClient } from &quot;npm:@supabase/supabase-js@2&quot;;
 import { PesaJet } from &quot;npm:@pesajet/sdk@1.0.3&quot;;
@@ -312,8 +1085,13 @@ serve(async(req)=&gt;{
   return new Response(&#x27;OK&#x27;,{status:200});
  }catch(e){console.error(&#x27;Webhook processing error&#x27;,e);return new Response(&#x27;Webhook processing failed&#x27;,{status:500})}
 });
-</script><script>
+</script>
+  
+<!-- Source block 6: retained from original application without logic changes. -->
+<script>
 function drawlabSource(id){return document.getElementById('bundle-'+id).textContent;}
 function drawlabDownload(id,name){const blob=new Blob([drawlabSource(id)],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 async function drawlabCopy(id){try{await navigator.clipboard.writeText(drawlabSource(id));document.getElementById('setupFeedback').textContent='SQL copied to clipboard.';}catch(e){document.getElementById('setupFeedback').textContent='Clipboard blocked; use Download schema.sql instead.';}}
-</script></body></html>
+</script>
+ </body>
+</html>
