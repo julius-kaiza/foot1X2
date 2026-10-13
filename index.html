@@ -163,7 +163,7 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <a href="#universalMarkets">All predictions</a><a href="#customerSubscriptions">League access</a><a href="#marketplaceWorkspace">
     Premium tips
    </a>
-<a class="admin-only" href="#adminPanel">
+<a class="admin-only" href="#ticketBuilder">🎟 Create tickets</a><a class="admin-only" href="#adminPanel">
     Super Admin
    </a>
 
@@ -779,12 +779,12 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <p class="status" id="planStatus"></p><div id="adminPlanList"></div>
 </section>
 <div class="actions" style="margin:18px 0"><button type="button" id="openTicketBuilder">+ Create ticket of your choice</button></div>
-<section class="panel hidden" id="ticketBuilder" style="margin:18px 0;border:1px solid #398977">
-<h3>Ticket Builder — Free, Single Purchase or Subscription</h3>
-<p class="muted">Build your own multi-match ticket. Publish it free, sell it individually, or include it in a subscription plan. All picks are entered by the Super Admin.</p>
+<section class="panel" id="ticketBuilder" style="margin:18px 0;border:1px solid #398977">
+<h3>🎟 Create and publish prediction tickets</h3>
+<p class="muted">Step 1: Choose Free, One-time Paid or a Subscription Plan. Step 2: Enter a ticket title. Step 3: Add matches and choose prediction markets. Step 4: Preview and publish. Only Super Admins can publish.</p>
 <div class="fields"><div class="field"><label for="ticketPlan">Ticket access</label><select id="ticketPlan"><option value="__free__">Free ticket — everyone can view</option><option value="">Individual paid ticket — one-time purchase</option></select></div><div class="field"><label for="ticketTitle">Ticket title</label><input id="ticketTitle" placeholder="e.g. Weekend 4-match accumulator"></div><div class="field"><label for="ticketPrice">Ticket price (UGX)</label><input id="ticketPrice" type="number" min="1" step="1" placeholder="Enter ticket price"></div></div>
 <div id="ticketPicks"></div>
-<div class="actions"><button type="button" class="secondary" id="ticketAddPick">+ Add match selection</button><button type="button" class="secondary" id="ticketPreview">Preview ticket</button><button type="button" class="secondary" id="ticketClear">Clear builder</button><button type="button" id="ticketPublish">Publish ticket for sale</button></div><div id="ticketPreviewArea" class="notice hidden" aria-live="polite" style="white-space:pre-line"></div>
+<div class="actions"><button type="button" class="secondary" id="ticketAddPick">+ Add match selection</button><button type="button" class="secondary" id="ticketPreview">Preview ticket</button><button type="button" class="secondary" id="ticketClear">Clear builder</button><button type="button" id="ticketPublish">Publish ticket</button></div><div id="ticketPreviewArea" class="notice hidden" aria-live="polite" style="white-space:pre-line"></div>
 <p class="status" id="ticketStatus" role="status"></p>
 </section>
 <section class="panel admin-only" id="orderVisibilityPanel" style="margin:18px 0;border:1px solid #38546c">
@@ -1300,7 +1300,7 @@ function ticketPickRow(values={}){
  const details=input('Selection details (optional)','text','e.g. Correct score 2-1 / kickoff time',values.details);
  const remove=makeBtn('Remove selection',()=>wrap.remove());remove.className='secondary';remove.type='button';wrap.append(fields,remove);wrap.getPick=()=>({home:home.value.trim(),away:away.value.trim(),league:competition.value.trim(),market:market.value,details:details.value.trim()});$('ticketPicks').append(wrap);
 }
-$('openTicketBuilder').onclick=()=>{const builder=$('ticketBuilder');builder.classList.toggle('hidden');if(!builder.classList.contains('hidden')){builder.scrollIntoView({behavior:'smooth',block:'start'});$('ticketTitle').focus();}};
+$('openTicketBuilder').onclick=()=>{const builder=$('ticketBuilder');builder.classList.remove('hidden');builder.scrollIntoView({behavior:'smooth',block:'start'});$('ticketTitle').focus();};
 $('ticketAddPick').onclick=()=>ticketPickRow();ticketPickRow();$('ticketPlan').value='__free__';
 function getTicketDraft(){return {title:$('ticketTitle').value.trim(),price:Number($('ticketPrice').value),plan:$('ticketPlan').value,picks:[...$('ticketPicks').children].map(x=>x.getPick())};}
 function syncTicketPrice(){const subscribed=Boolean($('ticketPlan').value);$('ticketPrice').disabled=subscribed;$('ticketPrice').title=$('ticketPlan').value==='__free__'?'Free tickets have no purchase price.':subscribed?'The selected subscription plan controls the price.':'Set the individual ticket price.';}
