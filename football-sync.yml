@@ -1,0 +1,19 @@
+name: Football fixture sync
+on:
+  schedule:
+    - cron: '17 4,16 * * *'
+  workflow_dispatch:
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync fixtures through authenticated Edge Function
+        env:
+          SUPABASE_FUNCTION_URL: ${{ secrets.SUPABASE_FUNCTION_URL }}
+          FOOTBALL_SYNC_SECRET: ${{ secrets.FOOTBALL_SYNC_SECRET }}
+        run: |
+          test -n "$SUPABASE_FUNCTION_URL" && test -n "$FOOTBALL_SYNC_SECRET"
+          curl --fail-with-body --retry 2 --max-time 120 -X POST "$SUPABASE_FUNCTION_URL" \
+            -H "x-football-sync-secret: $FOOTBALL_SYNC_SECRET" \
+            -H "Content-Type: application/json" \
+            -d '{}'
