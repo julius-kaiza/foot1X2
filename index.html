@@ -12,14 +12,15 @@
   ------------------------------------------------------------
 -->
 <!DOCTYPE html>
+
 <html lang="en">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width,initial-scale=1" name="viewport"/>
-  <title>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>
    Foot1X2 | Football Prediction Intelligence
   </title>
-  <style>
+<style>
    :root{font-family:Inter,system-ui,Arial,sans-serif;color:#e8eef8;background:#0b1220}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101f32);min-height:100vh}header{border-bottom:1px solid #26374a;background:#101b2b;padding:18px max(20px,calc((100vw - 1200px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.brand{font-weight:800;font-size:23px}.brand span{color:#42d5ac}.shell{max-width:1200px;margin:30px auto;padding:0 18px}.intro{margin-bottom:24px}.intro h1{margin:0 0 8px;font-size:clamp(26px,4vw,40px)}.muted{color:#9bb0c8}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:20px}.panel{background:#142338;border:1px solid #2b4159;border-radius:16px;padding:23px;margin-bottom:20px;box-shadow:0 12px 30px #0002}h2{font-size:20px;margin:0 0 16px}h3{font-size:16px;margin:16px 0 10px}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{display:flex;flex-direction:column;gap:6px}.field.wide{grid-column:1/-1}label{font-size:13px;color:#b7c8dd}input,select{width:100%;background:#0d1929;color:#fff;border:1px solid #38506a;border-radius:9px;padding:11px;font:inherit;min-width:0}input:focus{outline:2px solid #30bfa0;outline-offset:1px}button{background:#29c49c;color:#06231b;border:0;padding:11px 16px;border-radius:9px;font:inherit;font-weight:750;cursor:pointer}button.secondary{background:#273b51;color:#e8eef8}button.danger{background:#703849;color:#fff}button:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.pill{font-size:12px;background:#1b4550;color:#74ead0;border-radius:100px;padding:5px 10px}.metric{font-size:46px;font-weight:850;color:#59e6bd;margin:10px 0}.probrow{display:grid;grid-template-columns:85px 1fr 58px;gap:8px;align-items:center;margin:14px 0;font-size:13px}.track{height:12px;background:#25394d;border-radius:20px;overflow:hidden}.fill{height:100%;background:#5d8ef0}.fill.draw{background:#36d3a6}.fill.away{background:#e2a86a}.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.score{background:#0c1a2a;padding:13px;text-align:center;border-radius:10px}.score strong{display:block;font-size:20px}.score small{color:#9bb0c8}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;border-bottom:1px solid #2c4258;padding:11px 8px}th{color:#a6bad2}table button{padding:7px 9px;font-size:12px}.scroll{overflow-x:auto}.notice{border-left:3px solid #36d3a6;padding:10px 13px;background:#0c2430;color:#c3e3e2;font-size:13px;margin-top:15px}.status{min-height:22px;font-size:13px;color:#b6d0e5}.hidden{display:none!important}.auth{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.auth input{width:160px}.auth button{padding:10px}.full{grid-column:1/-1}footer{padding:20px 0 40px;color:#879eb6;font-size:12px}@media(max-width:850px){.grid{grid-template-columns:1fr}.auth input{width:140px}}@media(max-width:520px){.fields{grid-template-columns:1fr}.scores{grid-template-columns:repeat(3,minmax(0,1fr))}.panel{padding:16px}}
    /* ======================================================================
    DRAWLAB DESIGN SYSTEM — Professional presentation layer
@@ -89,7 +90,7 @@ tr:hover td { background: rgba(255,255,255,.025); }
 }
   .foot-live-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:18px 0}.foot-live-controls select{background:#12283a;color:#f0f7ff;border:1px solid #52667c;padding:9px;border-radius:8px}.foot-live-controls label{font-size:13px;color:#d8e6f3}#autoPredictions td{white-space:nowrap}#autoPredictions td:nth-child(4){font-weight:800;color:#70e5be}
 </style>
- <style id="foot1x2-design">
+<style id="foot1x2-design">
 #foot1x2Lab{margin:26px 0;border:1px solid #2e655a;background:linear-gradient(135deg,#102b32,#132338);padding:26px}.fx-top{display:flex;justify-content:space-between;gap:20px;align-items:start}.fx-pill{border:1px solid #327967;border-radius:999px;padding:9px 12px;font-size:12px;color:#91ecd3;white-space:nowrap}.fx-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.fx-fields label{display:flex;flex-direction:column;gap:8px;font-size:12px;color:#c3d6e5}.fx-fields input{width:100%;box-sizing:border-box;background:#0b1928;border:1px solid #385568;color:#fff;padding:11px;border-radius:9px}.fx-actions{display:flex;gap:9px;flex-wrap:wrap}.fx-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0}.fx-kpis>div{background:#0c1d2d;border:1px solid #2a4b5d;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:9px}.fx-kpis small{font-size:12px;color:#aac5d6}.fx-kpis strong{font-size:27px;color:#fff;font-variant-numeric:tabular-nums}.fx-kpis .fx-feature{border-color:#39c6a2;background:#123b3b}.fx-kpis .fx-feature strong{color:#7ef1d1}.fx-secondary{grid-template-columns:repeat(5,minmax(0,1fr))}.fx-secondary strong{font-size:20px}.fx-bars{display:grid;gap:9px}.fx-bar{display:grid;grid-template-columns:110px 1fr 65px;gap:10px;align-items:center;font-size:12px}.fx-bar>div{height:11px;border-radius:99px;background:#0b1826;overflow:hidden}.fx-bar i{display:block;height:100%;background:#4d94d5;border-radius:99px}.fx-bar.draw i{background:#35d6a5}.fx-bar.away i{background:#f2b85d}.fx-columns{display:grid;grid-template-columns:1.25fr 1fr;gap:25px;margin-top:22px}.fx-tablewrap{overflow:auto}.fx-matrix{width:100%;border-collapse:collapse;text-align:center;font-size:12px}.fx-matrix th,.fx-matrix td{padding:10px 6px;border:1px solid #29495c}.fx-matrix th{background:#1d3448;color:#c6e5ef}.fx-matrix td{background:#0e2233;font-variant-numeric:tabular-nums}.fx-matrix td.fx-diagonal{background:#145445;color:#d2fff0;font-weight:800}.fx-explanation{line-height:1.7;font-size:13px;background:#0d2030;border:1px solid #2d4c5e;padding:14px;border-radius:12px;color:#d4e5ee}.fx-explanation p{margin:0 0 9px}.fx-explanation p:last-child{margin:0}@media(max-width:850px){.fx-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.fx-columns{grid-template-columns:1fr}.fx-kpis,.fx-secondary{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){#foot1x2Lab{padding:14px}.fx-top{display:block}.fx-fields{grid-template-columns:1fr}.fx-kpis strong{font-size:22px}.fx-bar{grid-template-columns:70px 1fr 55px}}
 </style>
 <style id="foot1x2-role-design">
@@ -120,715 +121,675 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 @media(max-width:390px){.customer-benefits{grid-template-columns:1fr}}
 </style>
 </head>
- <body class="role-customer">
-  <header>
-   <div class="brand">
+<body class="role-customer">
+<header>
+<div class="brand">
     ⚽ Foot
     <span>
      1X2
     </span>
-   </div>
-   <div class="auth">
-    <span class="muted" id="identity">
+</div>
+<div class="auth">
+<span class="muted" id="identity">
      Local mode
     </span>
-    <input autocomplete="email" id="email" placeholder="Email" type="email"/>
-    <input autocomplete="current-password" id="password" placeholder="Password" type="password"/>
-    <button class="secondary" id="login">
+<input autocomplete="email" id="email" placeholder="Email" type="email"/>
+<input autocomplete="current-password" id="password" placeholder="Password" type="password"/>
+<button class="secondary" id="login">
      Sign in
     </button>
-    <button class="secondary" id="signup">
+<button class="secondary" id="signup">
      Sign up
     </button>
-    <button class="secondary hidden" id="logout">
+<button class="secondary hidden" id="logout">
      Sign out
     </button>
-   </div>
-   <p id="authStatus" role="status" aria-live="polite" style="margin:0 0 8px;padding:0 16px;color:#f0bd70;font-size:13px;display:none"></p>
-  </header>
-  <nav aria-label="Foot1X2 navigation" class="workspace-nav">
-   <a href="#workspace">
+</div>
+<p aria-live="polite" id="authStatus" role="status" style="margin:0 0 8px;padding:0 16px;color:#f0bd70;font-size:13px;display:none"></p>
+</header>
+<nav aria-label="Foot1X2 navigation" class="workspace-nav">
+<a href="#workspace">
     Overview
    </a>
-   <a class="admin-only" href="#predictionWorkspace">
+<a class="admin-only" href="#predictionWorkspace">
     Prediction model
    </a>
-   <a class="admin-only" href="#foot1x2Lab">Draw laboratory</a><a class="admin-only" href="#universalMarkets">All markets</a><a class="admin-only" href="#fixtureWorkspace">
+<a class="admin-only" href="#foot1x2Lab">Draw laboratory</a><a class="admin-only" href="#universalMarkets">All markets</a><a class="admin-only" href="#fixtureWorkspace">
     Fixtures
    </a>
-   <a class="admin-only" href="#historyWorkspace">
+<a class="admin-only" href="#historyWorkspace">
     History
    </a>
-   <a href="#universalMarkets">All predictions</a><a href="#marketplaceWorkspace">
+<a href="#universalMarkets">All predictions</a><a href="#marketplaceWorkspace">
     Premium tips
    </a>
-   <a class="admin-only" href="#adminPanel">
+<a class="admin-only" href="#adminPanel">
     Super Admin
    </a>
-   <a class="admin-only" href="#setupBundle">
-    Deployment
-   </a>
-  </nav>
-  <main class="shell" id="workspace">
-   <section class="intro">
-    <span class="eyebrow">
+
+</nav>
+<main class="shell" id="workspace">
+<section class="intro">
+<span class="eyebrow">
      FOOT1X2 • FOOTBALL INTELLIGENCE
     </span>
-    <h1>
+<h1>
      Foot1X2: match insights, intelligently selected.
     </h1>
-    <p class="muted">
+<p class="muted">
      Compare 1/X/2 probabilities, investigate likely draws, explore correct scores and publish premium predictions backed by transparent models.
     </p>
-   </section>
-   
-<section class="customer-welcome panel" id="customerWelcome" aria-labelledby="customerTitle">
- <span class="eyebrow">FOOT1X2 · MEMBER EXPERIENCE</span>
- <h2 id="customerTitle">Explore football predictions selected for you</h2>
- <p class="muted">Browse published match analysis and free predictions. Premium selections unlock only after your purchase is confirmed. All match publishing, pricing and availability are managed by Foot1X2.</p>
- <div class="customer-benefits"><div><strong>1 · Home win</strong><span>Published match picks</span></div><div><strong>X · Draw</strong><span>Draw probabilities</span></div><div><strong>2 · Away win</strong><span>Away selections</span></div><div><strong>Goals markets</strong><span>Under/over 2.5</span></div></div>
- <a class="customer-cta" href="#marketplaceWorkspace">Browse published predictions →</a>
- <p class="customer-note">Predictions are statistical estimates, not guarantees. Only published, permitted tips should be returned by the server.</p>
+</section>
+<section aria-labelledby="customerTitle" class="customer-welcome panel" id="customerWelcome">
+<span class="eyebrow">FOOT1X2 · MEMBER EXPERIENCE</span>
+<h2 id="customerTitle">Explore football predictions selected for you</h2>
+<p class="muted">Browse published match analysis and free predictions. Premium selections unlock only after your purchase is confirmed. All match publishing, pricing and availability are managed by Foot1X2.</p>
+<div class="customer-benefits"><div><strong>1 · Home win</strong><span>Published match picks</span></div><div><strong>X · Draw</strong><span>Draw probabilities</span></div><div><strong>2 · Away win</strong><span>Away selections</span></div><div><strong>Goals markets</strong><span>Under/over 2.5</span></div></div>
+<a class="customer-cta" href="#marketplaceWorkspace">Browse published predictions →</a>
+<p class="customer-note">Predictions are statistical estimates, not guarantees. Only published, permitted tips should be returned by the server.</p>
 </section>
 <div class="grid">
-    <section class="admin-only" id="predictionWorkspace">
-     <div class="panel">
-      <h2>
+<section class="admin-only" id="predictionWorkspace">
+<div class="panel">
+<h2>
        Match and team statistics
       </h2>
-      <div class="fields">
-       <div class="field">
-        <label for="home">
+<div class="fields">
+<div class="field">
+<label for="home">
          Home team
         </label>
-        <input id="home" maxlength="100" placeholder="e.g. Arsenal"/>
-       </div>
-       <div class="field">
-        <label for="away">
+<input id="home" maxlength="100" placeholder="e.g. Arsenal"/>
+</div>
+<div class="field">
+<label for="away">
          Away team
         </label>
-        <input id="away" maxlength="100" placeholder="e.g. Chelsea"/>
-       </div>
-       <div class="field">
-        <label for="league">
+<input id="away" maxlength="100" placeholder="e.g. Chelsea"/>
+</div>
+<div class="field">
+<label for="league">
          Competition
         </label>
-        <input id="league" maxlength="100" placeholder="e.g. Premier League"/>
-       </div>
-       <div class="field">
-        <label for="kickoff">
+<input id="league" maxlength="100" placeholder="e.g. Premier League"/>
+</div>
+<div class="field">
+<label for="kickoff">
          Kickoff (optional)
         </label>
-        <input id="kickoff" type="datetime-local"/>
-       </div>
-       <div class="field">
-        <label for="homeScored">
+<input id="kickoff" type="datetime-local"/>
+</div>
+<div class="field">
+<label for="homeScored">
          Home goals scored per home match
         </label>
-        <input id="homeScored" max="10" min="0" step="0.01" type="number" value="1.35"/>
-       </div>
-       <div class="field">
-        <label for="homeConceded">
+<input id="homeScored" max="10" min="0" step="0.01" type="number" value="1.35"/>
+</div>
+<div class="field">
+<label for="homeConceded">
          Home goals conceded per home match
         </label>
-        <input id="homeConceded" max="10" min="0" step="0.01" type="number" value="1.10"/>
-       </div>
-       <div class="field">
-        <label for="awayScored">
+<input id="homeConceded" max="10" min="0" step="0.01" type="number" value="1.10"/>
+</div>
+<div class="field">
+<label for="awayScored">
          Away goals scored per away match
         </label>
-        <input id="awayScored" max="10" min="0" step="0.01" type="number" value="1.15"/>
-       </div>
-       <div class="field">
-        <label for="awayConceded">
+<input id="awayScored" max="10" min="0" step="0.01" type="number" value="1.15"/>
+</div>
+<div class="field">
+<label for="awayConceded">
          Away goals conceded per away match
         </label>
-        <input id="awayConceded" max="10" min="0" step="0.01" type="number" value="1.25"/>
-       </div>
-       <div class="field">
-        <label for="leagueHome">
+<input id="awayConceded" max="10" min="0" step="0.01" type="number" value="1.25"/>
+</div>
+<div class="field">
+<label for="leagueHome">
          League home goals average
         </label>
-        <input id="leagueHome" max="10" min="0.1" step="0.01" type="number" value="1.50"/>
-       </div>
-       <div class="field">
-        <label for="leagueAway">
+<input id="leagueHome" max="10" min="0.1" step="0.01" type="number" value="1.50"/>
+</div>
+<div class="field">
+<label for="leagueAway">
          League away goals average
         </label>
-        <input id="leagueAway" max="10" min="0.1" step="0.01" type="number" value="1.20"/>
-       </div>
-       <div class="field">
-        <label for="homeXg">
+<input id="leagueAway" max="10" min="0.1" step="0.01" type="number" value="1.20"/>
+</div>
+<div class="field">
+<label for="homeXg">
          Home xG per home match (optional)
         </label>
-        <input id="homeXg" max="10" min="0" placeholder="Not available" step="0.01" type="number"/>
-       </div>
-       <div class="field">
-        <label for="awayXg">
+<input id="homeXg" max="10" min="0" placeholder="Not available" step="0.01" type="number"/>
+</div>
+<div class="field">
+<label for="awayXg">
          Away xG per away match (optional)
         </label>
-        <input id="awayXg" max="10" min="0" placeholder="Not available" step="0.01" type="number"/>
-       </div>
-       <div class="field">
-        <label for="rho">
+<input id="awayXg" max="10" min="0" placeholder="Not available" step="0.01" type="number"/>
+</div>
+<div class="field">
+<label for="rho">
          Dixon–Coles rho
         </label>
-        <input id="rho" max="0.2" min="-0.2" step="0.01" type="number" value="-0.10"/>
-       </div>
-       <div class="field">
-        <label for="xgWeight">
+<input id="rho" max="0.2" min="-0.2" step="0.01" type="number" value="-0.10"/>
+</div>
+<div class="field">
+<label for="xgWeight">
          xG blending weight (%)
         </label>
-        <input id="xgWeight" max="100" min="0" step="5" type="number" value="30"/>
-       </div>
-      </div>
-      <div class="notice">
+<input id="xgWeight" max="100" min="0" step="5" type="number" value="30"/>
+</div>
+</div>
+<div class="notice">
        Use home-only and away-only statistics from the same competition and period. The default rho is illustrative, not fitted to a league. Optional xG blends each team's attacking xG with its goal-based estimate; it does not model opponent xGA.
       </div>
-      <div class="actions">
-       <button id="calculate">
+<div class="actions">
+<button id="calculate">
         Calculate probabilities
        </button>
-       <button class="secondary" id="save">
+<button class="secondary" id="save">
         Save prediction
        </button>
-       <button class="secondary" id="reset">
+<button class="secondary" id="reset">
         Reset
        </button>
-      </div>
-      <p aria-live="polite" class="status" id="message" role="status">
-      </p>
-     </div>
-    </section>
-    <section>
-     <div class="panel">
-      <h2>
+</div>
+<p aria-live="polite" class="status" id="message" role="status">
+</p>
+</div>
+</section>
+<section>
+<div class="panel">
+<h2>
        Prediction dashboard
       </h2>
-      <span class="pill" id="modelTag">
+<span class="pill" id="modelTag">
        Dixon–Coles adjusted
       </span>
-      <div class="muted" style="margin-top:17px">
+<div class="muted" style="margin-top:17px">
        Probability of a draw
       </div>
-      <div class="metric" id="drawProbability">
+<div class="metric" id="drawProbability">
        —
       </div>
-      <div id="probabilities">
-      </div>
-      <h3>
+<div id="probabilities">
+</div>
+<h3>
        Most likely drawn scores
       </h3>
-      <div class="scores" id="drawScores">
-       <div class="muted">
+<div class="scores" id="drawScores">
+<div class="muted">
         Calculate a match to see scores.
        </div>
-      </div>
-      <p class="muted" id="expected">
-      </p>
-      <div class="notice">
+</div>
+<p class="muted" id="expected">
+</p>
+<div class="notice">
        These are statistical estimates, not verified predictions. Assess calibration using completed matches before relying on the model.
       </div>
-     </div>
-     <!-- Super Admin only: project connection and deployment credentials. -->
-     <div class="panel admin-only" id="adminConnectionSettings" aria-label="Super Admin Supabase configuration">
-      <h2>
+</div>
+<!-- Super Admin only: project connection and deployment credentials. -->
+<div aria-label="Super Admin Supabase configuration" class="panel admin-only" id="adminConnectionSettings">
+<h2>
        Supabase connection
       </h2>
-      <div class="field">
-       <label for="sbUrl">
+<div class="field">
+<label for="sbUrl">
         Project URL
        </label>
-       <input id="sbUrl" placeholder="https://project.supabase.co"/>
-      </div>
-      <div class="field" style="margin-top:12px">
-       <label for="sbKey">
+<input id="sbUrl" placeholder="https://project.supabase.co"/>
+</div>
+<div class="field" style="margin-top:12px">
+<label for="sbKey">
         Publishable / anon key (never service_role)
        </label>
-       <input id="sbKey" placeholder="sb_publishable_... or anon JWT" type="password"/>
-      </div>
-      <div class="actions">
-       <button id="connect">
+<input id="sbKey" placeholder="sb_publishable_... or anon JWT" type="password"/>
+</div>
+<div class="actions">
+<button id="connect">
         Connect Supabase
        </button>
-       <button class="secondary" id="disconnect">
+<button class="secondary" id="disconnect">
         Disconnect
        </button>
-      </div>
-      <p class="muted" style="font-size:12px">
+</div>
+<p class="muted" style="font-size:12px">
        Connection settings stay in this browser's local storage. Prediction history syncs while signed in. Production configuration is centrally managed.
       </p>
-      <p class="status" id="connection" role="status">
-      </p>
-     </div>
-    </section>
-    <section class="admin-only full panel" id="fixtureWorkspace">
-     <h2>
+<p class="status" id="connection" role="status">
+</p>
+</div>
+</section>
+<section class="admin-only full panel" id="fixtureWorkspace">
+<h2>
       Automatic football fixtures &amp; draw ranking
-     </h2><div class="foot-live-controls"><label for="fixtureSort">Rank by</label><select id="fixtureSort"><option value="draw">Draw (X)</option><option value="homeWin">Home win (1)</option><option value="awayWin">Away win (2)</option><option value="under25">Under 2.5</option><option value="over25">Over 2.5</option><option value="btts">Both teams score</option></select><label for="minEvidence">Minimum home/away matches</label><select id="minEvidence"><option value="3">3</option><option value="5" selected>5</option><option value="8">8</option></select><button id="exportFixtures" class="secondary" type="button">Export analysis CSV</button></div><p class="muted">Official fixtures and final scores are fetched from football-data.org through your secure Supabase function. Predictions are generated automatically from observed team form. Missing history is shown as insufficient evidence, never fabricated.</p><div class="scroll"><table><thead><tr><th>Team</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th></tr></thead><tbody id="liveStandings"><tr><td colspan="8">Fetch a league to calculate its table from available finished matches.</td></tr></tbody></table></div><h3>Automated match predictions</h3><div class="scroll"><table><thead><tr><th>Kickoff</th><th>Fixture</th><th>1</th><th>X</th><th>2</th><th>U2.5</th><th>O2.5</th><th>BTTS</th><th>Likely score</th><th>Sample</th><th>Action</th></tr></thead><tbody id="autoPredictions"><tr><td colspan="11">Choose a competition and click Fetch fixtures &amp; rank draws.</td></tr></tbody></table></div>
-     <p class="muted">
+     </h2><div class="foot-live-controls"><label for="fixtureSort">Rank by</label><select id="fixtureSort"><option value="draw">Draw (X)</option><option value="homeWin">Home win (1)</option><option value="awayWin">Away win (2)</option><option value="under25">Under 2.5</option><option value="over25">Over 2.5</option><option value="btts">Both teams score</option></select><label for="minEvidence">Minimum home/away matches</label><select id="minEvidence"><option value="3">3</option><option selected="" value="5">5</option><option value="8">8</option></select><button class="secondary" id="exportFixtures" type="button">Export analysis CSV</button></div><p class="muted">Official fixtures and final scores are fetched from football-data.org through your secure Supabase function. Predictions are generated automatically from observed team form. Missing history is shown as insufficient evidence, never fabricated.</p><div class="scroll"><table><thead><tr><th>Team</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th></tr></thead><tbody id="liveStandings"><tr><td colspan="8">Fetch a league to calculate its table from available finished matches.</td></tr></tbody></table></div><h3>Automated match predictions</h3><div class="scroll"><table><thead><tr><th>Kickoff</th><th>Fixture</th><th>1</th><th>X</th><th>2</th><th>U2.5</th><th>O2.5</th><th>BTTS</th><th>Likely score</th><th>Sample</th><th>Action</th></tr></thead><tbody id="autoPredictions"><tr><td colspan="11">Choose a competition and click Fetch fixtures &amp; rank draws.</td></tr></tbody></table></div>
+<p class="muted">
       Import scheduled matches and recent league results securely through a Supabase Edge Function. Goals-based estimates are computed from finished matches; xG is not supplied by this provider. Requires sign-in and a deployed Edge Function.
      </p>
-     <div class="fields">
-      <div class="field">
-       <label for="competitionCode">
+<div class="fields">
+<div class="field">
+<label for="competitionCode">
         Competition
        </label>
-       <select id="competitionCode" style="width:100%;padding:12px;background:#101b2b;color:#e8eef8;border:1px solid #40546b;border-radius:8px">
-        <option value="PL">
+<select id="competitionCode" style="width:100%;padding:12px;background:#101b2b;color:#e8eef8;border:1px solid #40546b;border-radius:8px">
+<option value="PL">
          Premier League
         </option>
-        <option value="PD">
+<option value="PD">
          La Liga
         </option>
-        <option value="BL1">
+<option value="BL1">
          Bundesliga
         </option>
-        <option value="SA">
+<option value="SA">
          Serie A
         </option>
-        <option value="FL1">
+<option value="FL1">
          Ligue 1
         </option>
-        <option value="DED">
+<option value="DED">
          Eredivisie
         </option>
-        <option value="PPL">
+<option value="PPL">
          Primeira Liga
         </option>
-        <option value="CL">
+<option value="CL">
          Champions League
         </option>
-        <option value="EC">
+<option value="EC">
          European Championship
         </option>
-        <option value="WC">
+<option value="WC">
          World Cup
         </option>
-        <option value="BSA">
+<option value="BSA">
          Brazil Série A
         </option>
-        <option value="ELC">
+<option value="ELC">
          English Championship
         </option>
-        <option value="EL1">
+<option value="EL1">
          English League One
         </option>
-        <option value="EL2">
+<option value="EL2">
          English League Two
         </option>
-       </select>
-      </div>
-      <div class="field">
-       <label for="lookahead">
+</select>
+</div>
+<div class="field">
+<label for="lookahead">
         Upcoming days
        </label>
-       <input id="lookahead" max="30" min="1" type="number" value="7"/>
-      </div>
-     </div>
-     <div class="actions">
-      <button id="fetchFixtures">
+<input id="lookahead" max="30" min="1" type="number" value="7"/>
+</div>
+</div>
+<div class="actions">
+<button id="fetchFixtures">
        Fetch fixtures &amp; rank draws
       </button>
-      <button class="secondary" id="refreshCompetitions">
+<button class="secondary" id="refreshCompetitions">
        Load available competitions
       </button>
-     </div>
-     <p aria-live="polite" class="status" id="fixtureStatus" role="status">
-     </p>
-     <div class="scroll">
-      <table>
-       <thead>
-        <tr>
-         <th>
+</div>
+<p aria-live="polite" class="status" id="fixtureStatus" role="status">
+</p>
+<div class="scroll">
+<table>
+<thead>
+<tr>
+<th>
           Kickoff
          </th>
-         <th>
+<th>
           Fixture
          </th>
-         <th>
+<th>
           Draw probability
          </th>
-         <th>
+<th>
           Expected goals
          </th>
-         <th>
+<th>
           Evidence
          </th>
-         <th>
+<th>
           Action
          </th>
-        </tr>
-       </thead>
-       <tbody id="fixturesList">
-        <tr>
-         <td class="muted" colspan="6">
+</tr>
+</thead>
+<tbody id="fixturesList">
+<tr>
+<td class="muted" colspan="6">
           Connect Supabase, sign in and fetch fixtures.
          </td>
-        </tr>
-       </tbody>
-      </table>
-     </div>
-    </section>
-    <section class="admin-only full panel" id="historyWorkspace">
-     <h2>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section class="admin-only full panel" id="historyWorkspace">
+<h2>
       Saved predictions and ranking
      </h2>
-     <p class="muted">
+<p class="muted">
       Predictions are sorted by estimated draw probability. Sign in to synchronize your records to Supabase.
      </p>
-     <div class="scroll">
-      <table>
-       <thead>
-        <tr>
-         <th>
+<div class="scroll">
+<table>
+<thead>
+<tr>
+<th>
           Fixture
          </th>
-         <th>
+<th>
           Competition
          </th>
-         <th>
+<th>
           Draw %
          </th>
-         <th>
+<th>
           Expected goals
          </th>
-         <th>
+<th>
           Result
          </th>
-         <th>
+<th>
           Action
          </th>
-        </tr>
-       </thead>
-       <tbody id="history">
-        <tr>
-         <td class="muted" colspan="6">
+</tr>
+</thead>
+<tbody id="history">
+<tr>
+<td class="muted" colspan="6">
           No saved predictions yet.
          </td>
-        </tr>
-       </tbody>
-      </table>
-     </div>
-    </section>
-   </div>
-   <section class="full panel" id="marketplaceWorkspace">
-    <h2>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<section class="full panel" id="marketplaceWorkspace">
+<h2>
      Draw marketplace · Free and premium
     </h2>
-    <p class="muted">
+<p class="muted">
      Customers can browse published matches. Paid analyses remain protected until payment is verified. Requests are not payments.
     </p>
-    <div class="fields">
-     <div class="field">
-      <label for="marketSearch">
+<div class="fields">
+<div class="field">
+<label for="marketSearch">
        Search teams or leagues
       </label>
-      <input id="marketSearch" placeholder="Search predictions"/>
-     </div>
-     <div class="field">
-      <label for="marketFilter">
+<input id="marketSearch" placeholder="Search predictions"/>
+</div>
+<div class="field">
+<label for="marketFilter">
        Access
       </label>
-      <select id="marketFilter">
-       <option value="all">
+<select id="marketFilter">
+<option value="all">
         All published
        </option>
-       <option value="free">
+<option value="free">
         Free
        </option>
-       <option value="paid">
+<option value="paid">
         Premium
        </option>
-       <option value="unlocked">
+<option value="unlocked">
         My unlocked
        </option>
-      </select>
-     </div>
-    </div>
-    <div class="actions">
-     <button id="browseMarket">
+</select>
+</div>
+</div>
+<div class="actions">
+<button id="browseMarket">
       Refresh marketplace
      </button>
-     <button class="secondary" id="myOrders">
+<button class="secondary" id="myOrders">
       My orders
      </button>
-    </div>
-    <p class="status" id="marketStatus">
-    </p>
-    <div class="panel hidden" id="pesajetCheckout" style="margin:14px 0">
-     <h3>
+</div>
+<p class="status" id="marketStatus">
+</p>
+<div class="panel hidden" id="pesajetCheckout" style="margin:14px 0">
+<h3>
       Secure mobile money checkout
      </h3>
-     <p class="muted" id="pesajetProduct">
-     </p>
-     <div class="fields">
-      <div class="field">
-       <label>
+<p class="muted" id="pesajetProduct">
+</p>
+<div class="fields">
+<div class="field">
+<label>
         Mobile money provider
        </label>
-       <select id="pesajetProvider">
-        <option value="mtn">
+<select id="pesajetProvider">
+<option value="mtn">
          MTN Mobile Money
         </option>
-        <option value="airtel">
+<option value="airtel">
          Airtel Money
         </option>
-       </select>
-      </div>
-      <div class="field">
-       <label>
+</select>
+</div>
+<div class="field">
+<label>
         Uganda mobile money number
        </label>
-       <input id="pesajetPhone" placeholder="+256771234567" type="tel"/>
-      </div>
-     </div>
-     <div class="actions">
-      <button id="pesajetPay">
+<input id="pesajetPhone" placeholder="+256771234567" type="tel"/>
+</div>
+</div>
+<div class="actions">
+<button id="pesajetPay">
        Request mobile money payment
       </button>
-      <button class="secondary" id="pesajetCancel">
+<button class="secondary" id="pesajetCancel">
        Cancel
       </button>
-      <button class="secondary" id="pesajetCheck">
+<button class="secondary" id="pesajetCheck">
        Check payment status
       </button>
-     </div>
-     <p class="status" id="pesajetStatus" role="status">
-     </p>
-    </div>
-    <div class="scroll">
-     <table>
-      <thead>
-       <tr>
-        <th>
+</div>
+<p class="status" id="pesajetStatus" role="status">
+</p>
+</div>
+<div class="scroll">
+<table>
+<thead>
+<tr>
+<th>
          League / match
         </th>
-        <th>
+<th>
          Kickoff
         </th>
-        <th>
+<th>
          Access
         </th>
-        <th>
+<th>
          Prediction
         </th>
-        <th>
+<th>
          Action
         </th>
-       </tr>
-      </thead>
-      <tbody id="marketRows">
-      </tbody>
-     </table>
-    </div>
-   </section>
-   <section aria-label="Super Administrator Control Centre" class="full panel hidden admin-only" id="adminPanel">
-    <h2>
+</tr>
+</thead>
+<tbody id="marketRows">
+</tbody>
+</table>
+</div>
+</section>
+<section aria-label="Super Administrator Control Centre" class="full panel hidden admin-only" id="adminPanel">
+<h2>
      Super Admin Control Centre
     </h2>
-    <p class="muted">
+<p class="muted">
      Administrative workspace: manage league access, published predictions, pricing, orders and visibility. Permissions are verified server-side by Supabase.
     </p>
-    <h3>
+<h3>
      Create league
     </h3>
-    <div class="fields">
-     <div class="field">
-      <label>
+<div class="fields">
+<div class="field">
+<label>
        League name
       </label>
-      <input id="admLeagueName" placeholder="League name"/>
-     </div>
-     <div class="field">
-      <label>
+<input id="admLeagueName" placeholder="League name"/>
+</div>
+<div class="field">
+<label>
        Country
       </label>
-      <input id="admCountry" placeholder="Country"/>
-     </div>
-     <div class="field">
-      <label>
+<input id="admCountry" placeholder="Country"/>
+</div>
+<div class="field">
+<label>
        Access
       </label>
-      <select id="admLeagueMode">
-       <option value="free">
+<select id="admLeagueMode">
+<option value="free">
         Free
        </option>
-       <option value="paid">
+<option value="paid">
         Paid
        </option>
-       <option value="hidden">
+<option value="hidden">
         Hidden
        </option>
-      </select>
-     </div>
-     <div class="field">
-      <label>
+</select>
+</div>
+<div class="field">
+<label>
        Price UGX
       </label>
-      <input id="admLeaguePrice" min="0" type="number" value="5000"/>
-     </div>
-    </div>
-    <button id="createLeague">
+<input id="admLeaguePrice" min="0" type="number" value="5000"/>
+</div>
+</div>
+<button id="createLeague">
      Create league
     </button>
-    <h3>
+<h3>
      Manage leagues
     </h3>
-    <p class="muted">
+<p class="muted">
      A paid league unlocks all eligible published predictions in that league. Match-level free overrides remain free.
     </p>
-    <div id="adminLeagues">
-    </div>
-    <h3>
+<div id="adminLeagues">
+</div>
+<h3>
      Business overview
     </h3>
-    <div class="scores" id="businessMetrics">
-    </div>
-    <h3>
-     <div class="notice" id="savedMatchPublishNotice">Saved predictions can be selected below. Saving a prediction does not publish it to customers.</div>
-     <div class="field" style="margin:14px 0"><label for="admSavedMatch">Saved match — select to fill the publishing form</label><select id="admSavedMatch"><option value="">Choose a saved match…</option></select><button type="button" class="secondary" id="admReloadSaved" style="margin-top:8px">Refresh saved matches</button></div>
+<div class="scores" id="businessMetrics">
+</div>
+<h3>
+<div class="notice" id="savedMatchPublishNotice">Saved predictions can be selected below. Saving a prediction does not publish it to customers.</div>
+<div class="field" style="margin:14px 0"><label for="admSavedMatch">Saved match — select to fill the publishing form</label><select id="admSavedMatch"><option value="">Choose a saved match…</option></select><button class="secondary" id="admReloadSaved" style="margin-top:8px" type="button">Refresh saved matches</button></div>
      Publish a match
     </h3>
-    <div class="fields">
-     <div class="field">
-      <label>
+<div class="fields">
+<div class="field">
+<label>
        League
       </label>
-      <select id="admLeagueSelect">
-      </select>
-     </div>
-     <div class="field">
-      <label>
+<select id="admLeagueSelect">
+</select>
+</div>
+<div class="field">
+<label>
        Home
       </label>
-      <input id="admHome"/>
-     </div>
-     <div class="field">
-      <label>
+<input id="admHome"/>
+</div>
+<div class="field">
+<label>
        Away
       </label>
-      <input id="admAway"/>
-     </div>
-     <div class="field">
-      <label>
+<input id="admAway"/>
+</div>
+<div class="field">
+<label>
        Kickoff
       </label>
-      <input id="admKickoff" type="datetime-local"/>
-     </div>
-     <div class="field">
-      <label>
+<input id="admKickoff" type="datetime-local"/>
+</div>
+<div class="field">
+<label>
        Draw probability (0–1)
       </label>
-      <input id="admProbability" max="1" min="0" step="0.0001" type="number"/>
-     </div>
-     <div class="field">
-      <label>
+<input id="admProbability" max="1" min="0" step="0.0001" type="number"/>
+</div>
+<div class="field">
+<label>
        Predicted score
       </label>
-      <input id="admScore" placeholder="1-1"/>
-     </div>
-     <div class="field">
-      <label>
+<input id="admScore" placeholder="1-1"/>
+</div>
+<div class="field">
+<label>
        Access override
       </label>
-      <select id="admMode">
-       <option value="inherit">
+<select id="admMode">
+<option value="inherit">
         Inherit league
        </option>
-       <option value="free">
+<option value="free">
         Free
        </option>
-       <option value="paid">
+<option value="paid">
         Paid
        </option>
-       <option value="hidden">
+<option value="hidden">
         Hidden
        </option>
-      </select>
-     </div>
-     <div class="field">
-      <label>
+</select>
+</div>
+<div class="field">
+<label>
        Price UGX
       </label>
-      <input id="admPrice" min="0" type="number" value="5000"/>
-     </div>
-    </div>
-    <div class="field">
-     <label>
+<input id="admPrice" min="0" type="number" value="5000"/>
+</div>
+</div>
+<div class="field">
+<label>
       Private analysis (revealed only after access)
      </label>
-     <textarea id="admAnalysis" rows="3" style="width:100%"></textarea>
-    </div>
-    <button id="publishTip">
+<textarea id="admAnalysis" rows="3" style="width:100%"></textarea>
+</div>
+<button id="publishTip">
      Publish match
     </button>
-    <h3>
+<h3>
      Manage published matches
     </h3>
-    <div id="adminTips">
-    </div>
-    <h3>
+<div id="adminTips">
+</div>
+<h3>
      Orders · PesaJet verified payments and manual review
     </h3>
-    <div id="adminOrders">
-    </div>
-    <p class="status" id="adminStatus">
-    </p>
-   </section>
-   <footer>
+<div id="adminOrders">
+</div>
+<p class="status" id="adminStatus">
+</p>
+</section>
+<footer>
     © Foot1X2 · Statistical football analysis · Probabilities are estimates, never guarantees. Verify payment and provider integrations before production use.
    </footer>
-   
-<section class="admin-only panel full" id="foot1x2Lab" aria-labelledby="foot1x2Title">
-  <div class="fx-top"><div><span class="eyebrow">FOOT1X2 • RESEARCH WORKSPACE</span><h2 id="foot1x2Title">Advanced Draw & 1X2 Laboratory</h2><p class="muted">Independent mathematical estimates. Adjust expected goals, compare models and inspect exact score probabilities. This tool uses supplied inputs, not live team statistics.</p></div><span class="fx-pill">Probability-based · No guarantees</span></div>
-  <div class="fx-fields"><label>Home team<input id="fxHome" value="Home team" maxlength="70"></label><label>Away team<input id="fxAway" value="Away team" maxlength="70"></label><label>Expected home goals (λ)<input id="fxLambdaH" type="number" min="0.05" max="6" step="0.05" value="1.25"></label><label>Expected away goals (λ)<input id="fxLambdaA" type="number" min="0.05" max="6" step="0.05" value="1.10"></label><label>Low-score correlation (ρ)<input id="fxRho" type="number" min="-0.3" max="0.3" step="0.01" value="-0.08"></label><label>Draw threshold (%)<input id="fxThreshold" type="number" min="10" max="70" step="1" value="30"></label></div>
-  <div class="fx-actions"><button id="fxAnalyze">Analyze match</button><button id="fxFromCalculator" class="secondary">Use main calculator's current inputs</button><button id="fxExport" class="secondary">Export report CSV</button></div>
-  <p id="fxStatus" class="status" role="status">Enter match assumptions and select Analyze match.</p>
-  <div class="fx-kpis"><div><small>Home win · 1</small><strong id="fxP1">—</strong></div><div class="fx-feature"><small>Draw · X</small><strong id="fxPX">—</strong></div><div><small>Away win · 2</small><strong id="fxP2">—</strong></div><div><small>Most likely score</small><strong id="fxScore">—</strong></div></div>
-  <div class="fx-bars" id="fxBars" aria-label="Outcome probabilities"></div>
-  <div class="fx-kpis fx-secondary"><div><small>Under 2.5 goals</small><strong id="fxUnder">—</strong></div><div><small>Both teams score</small><strong id="fxBTTS">—</strong></div><div><small>0–0</small><strong id="fx00">—</strong></div><div><small>1–1</small><strong id="fx11">—</strong></div><div><small>2–2</small><strong id="fx22">—</strong></div></div>
-  <div class="fx-columns"><div><h3>Exact score probability matrix</h3><p class="muted">Home goals on rows; away goals on columns. Probabilities are calculated from the normalized score distribution.</p><div class="fx-tablewrap"><table class="fx-matrix" id="fxMatrix"><tbody></tbody></table></div></div><div><h3>Draw intelligence</h3><div id="fxExplanation" class="fx-explanation">Calculate a match to inspect its draw profile.</div><h3>Model comparison</h3><div id="fxCompare" class="fx-explanation">Standard Poisson and Dixon–Coles adjustments will appear here.</div><p class="muted">The threshold is a user-selected screening rule, not a validated accuracy or confidence measure. No model can guarantee a draw.</p></div></div>
+<section aria-labelledby="foot1x2Title" class="admin-only panel full" id="foot1x2Lab">
+<div class="fx-top"><div><span class="eyebrow">FOOT1X2 • RESEARCH WORKSPACE</span><h2 id="foot1x2Title">Advanced Draw &amp; 1X2 Laboratory</h2><p class="muted">Independent mathematical estimates. Adjust expected goals, compare models and inspect exact score probabilities. This tool uses supplied inputs, not live team statistics.</p></div><span class="fx-pill">Probability-based · No guarantees</span></div>
+<div class="fx-fields"><label>Home team<input id="fxHome" maxlength="70" value="Home team"/></label><label>Away team<input id="fxAway" maxlength="70" value="Away team"/></label><label>Expected home goals (λ)<input id="fxLambdaH" max="6" min="0.05" step="0.05" type="number" value="1.25"/></label><label>Expected away goals (λ)<input id="fxLambdaA" max="6" min="0.05" step="0.05" type="number" value="1.10"/></label><label>Low-score correlation (ρ)<input id="fxRho" max="0.3" min="-0.3" step="0.01" type="number" value="-0.08"/></label><label>Draw threshold (%)<input id="fxThreshold" max="70" min="10" step="1" type="number" value="30"/></label></div>
+<div class="fx-actions"><button id="fxAnalyze">Analyze match</button><button class="secondary" id="fxFromCalculator">Use main calculator's current inputs</button><button class="secondary" id="fxExport">Export report CSV</button></div>
+<p class="status" id="fxStatus" role="status">Enter match assumptions and select Analyze match.</p>
+<div class="fx-kpis"><div><small>Home win · 1</small><strong id="fxP1">—</strong></div><div class="fx-feature"><small>Draw · X</small><strong id="fxPX">—</strong></div><div><small>Away win · 2</small><strong id="fxP2">—</strong></div><div><small>Most likely score</small><strong id="fxScore">—</strong></div></div>
+<div aria-label="Outcome probabilities" class="fx-bars" id="fxBars"></div>
+<div class="fx-kpis fx-secondary"><div><small>Under 2.5 goals</small><strong id="fxUnder">—</strong></div><div><small>Both teams score</small><strong id="fxBTTS">—</strong></div><div><small>0–0</small><strong id="fx00">—</strong></div><div><small>1–1</small><strong id="fx11">—</strong></div><div><small>2–2</small><strong id="fx22">—</strong></div></div>
+<div class="fx-columns"><div><h3>Exact score probability matrix</h3><p class="muted">Home goals on rows; away goals on columns. Probabilities are calculated from the normalized score distribution.</p><div class="fx-tablewrap"><table class="fx-matrix" id="fxMatrix"><tbody></tbody></table></div></div><div><h3>Draw intelligence</h3><div class="fx-explanation" id="fxExplanation">Calculate a match to inspect its draw profile.</div><h3>Model comparison</h3><div class="fx-explanation" id="fxCompare">Standard Poisson and Dixon–Coles adjustments will appear here.</div><p class="muted">The threshold is a user-selected screening rule, not a validated accuracy or confidence measure. No model can guarantee a draw.</p></div></div>
 </section>
+<section class="panel full" id="universalMarkets"><h2>Comprehensive prediction markets — live calculator</h2><p class="muted">Derived from the current goal model. These are estimates, not guaranteed outcomes. No corners, cards, or player predictions without corresponding event data.</p><div class="fields"><div class="field"><label for="marketLambdaH">Home expected goals</label><input id="marketLambdaH" max="8" min="0.05" step="0.01" type="number" value="1.35"/></div><div class="field"><label for="marketLambdaA">Away expected goals</label><input id="marketLambdaA" max="8" min="0.05" step="0.01" type="number" value="1.10"/></div><div class="field"><label for="marketRho">Dixon–Coles correlation</label><input id="marketRho" max="0.2" min="-0.2" step="0.01" type="number" value="-0.08"/></div></div><div class="actions"><button id="marketAnalyze" type="button">Calculate all markets</button><button class="secondary" id="marketFromMain" type="button">Use main calculator</button><button class="secondary" id="marketExport" type="button">Export markets CSV</button></div><p class="status" id="marketEngineStatus" role="status"></p><div class="scroll"><table><thead><tr><th>Market</th><th>Selection</th><th>Probability</th><th>Fair decimal odds</th></tr></thead><tbody id="marketEngineRows"></tbody></table></div><h3>Most likely exact scores</h3><div class="scores" id="marketExactScores"></div></section>
 
-<section class="panel full" id="universalMarkets"><h2>Comprehensive prediction markets — live calculator</h2><p class="muted">Derived from the current goal model. These are estimates, not guaranteed outcomes. No corners, cards, or player predictions without corresponding event data.</p><div class="fields"><div class="field"><label for="marketLambdaH">Home expected goals</label><input id="marketLambdaH" type="number" min="0.05" max="8" step="0.01" value="1.35"></div><div class="field"><label for="marketLambdaA">Away expected goals</label><input id="marketLambdaA" type="number" min="0.05" max="8" step="0.01" value="1.10"></div><div class="field"><label for="marketRho">Dixon–Coles correlation</label><input id="marketRho" type="number" min="-0.2" max="0.2" step="0.01" value="-0.08"></div></div><div class="actions"><button id="marketAnalyze" type="button">Calculate all markets</button><button id="marketFromMain" class="secondary" type="button">Use main calculator</button><button id="marketExport" class="secondary" type="button">Export markets CSV</button></div><p id="marketEngineStatus" class="status" role="status"></p><div class="scroll"><table><thead><tr><th>Market</th><th>Selection</th><th>Probability</th><th>Fair decimal odds</th></tr></thead><tbody id="marketEngineRows"></tbody></table></div><h3>Most likely exact scores</h3><div id="marketExactScores" class="scores"></div></section>
-<section class="admin-only panel" id="setupBundle">
-    <h2>
-     Deployment &amp; Database Setup
-    </h2>
-    <p class="muted">
-     This single HTML file contains the complete browser app and embedded deployment sources. Supabase database policies and Edge Functions still run on Supabase servers; HTML alone cannot securely execute payment secrets or webhooks.
-    </p>
-    <div class="actions">
-     <button class="secondary" onclick="drawlabCopy('schema')">
-      Copy complete SQL schema
-     </button>
-     <button class="secondary" onclick="drawlabDownload('schema','schema.sql')">
-      Download schema.sql
-     </button>
-    </div>
-    <p class="muted">
-     Run the SQL in Supabase SQL Editor on a new project, then assign your own authenticated UUID to the admins table from the SQL Editor. Review the SQL before applying it to an existing project.
-    </p>
-    <div class="actions">
-     <button class="secondary" onclick="drawlabDownload('football','index.ts')">
-      Football function
-     </button>
-     <button class="secondary" onclick="drawlabDownload('checkout','index.ts')">
-      PesaJet checkout function
-     </button>
-     <button class="secondary" onclick="drawlabDownload('webhook','index.ts')">
-      PesaJet webhook function
-     </button>
-    </div>
-    <p class="muted">
-     Deploy each downloaded index.ts into a Supabase Edge Function named football-fixtures, pesajet-checkout, or pesajet-webhook. Configure provider secrets on the server, never in this HTML. PesaJet requires sandbox verification of API and webhook formats and approval of your domains/server IPs before live use.
-    </p>
-    <p class="status" id="setupFeedback" role="status">
-    </p>
-   </section>
-  </main>
-  
+</main>
 <!-- Source block 1: retained from original application without logic changes. -->
 <script src="./config.js"></script>
 <script type="module">
@@ -1097,9 +1058,8 @@ $('publishTip').onclick=async()=>{if(!adminMode)return;const row={league_id:$('a
 setInterval(()=>{if(client&&user)checkAdmin().catch(()=>{})},120000);
 const oldInit=initClient;initClient=async function(){await oldInit();await checkAdmin();await marketRefresh()};
 </script>
-  
 <!-- Source block 2: retained from original application without logic changes. -->
-<script type="text/plain" id="bundle-schema">-- ===== supabase.sql =====
+<script id="bundle-schema" type="text/plain">-- ===== supabase.sql =====
 -- Run in Supabase SQL Editor. Each user can only access their own predictions.
 create extension if not exists pgcrypto;
 create table if not exists public.predictions (
@@ -1235,9 +1195,8 @@ revoke insert, update, delete on public.admins from authenticated;
 grant select on public.admins to authenticated;
 -- RLS for reading admins remains restricted.
 </script>
-  
 <!-- Source block 3: retained from original application without logic changes. -->
-<script type="text/plain" id="bundle-football">import { createClient } from &amp;#x27;https://esm.sh/@supabase/supabase-js@2&amp;#x27;;
+<script id="bundle-football" type="text/plain">import { createClient } from &amp;#x27;https://esm.sh/@supabase/supabase-js@2&amp;#x27;;
 const cors = { &amp;#x27;Access-Control-Allow-Origin&amp;#x27;: &amp;#x27;*&amp;#x27;, &amp;#x27;Access-Control-Allow-Headers&amp;#x27;: &amp;#x27;authorization, x-client-info, apikey, content-type&amp;#x27;, &amp;#x27;Access-Control-Allow-Methods&amp;#x27;: &amp;#x27;GET, OPTIONS&amp;#x27; };
 const validCode = (v:string)=&amp;gt;/^[A-Z0-9]{2,8}$/.test(v);
 Deno.serve(async req =&amp;gt; {
@@ -1267,9 +1226,8 @@ Deno.serve(async req =&amp;gt; {
   }catch(e){return respond({error:&amp;#x27;Provider request failed: &amp;#x27;+(e instanceof Error?e.message:&amp;#x27;unknown error&amp;#x27;)},502)}
 });
 </script>
-  
 <!-- Source block 4: retained from original application without logic changes. -->
-<script type="text/plain" id="bundle-checkout">import { serve } from &quot;https://deno.land/std@0.224.0/http/server.ts&quot;;
+<script id="bundle-checkout" type="text/plain">import { serve } from &quot;https://deno.land/std@0.224.0/http/server.ts&quot;;
 import { createClient } from &quot;npm:@supabase/supabase-js@2&quot;;
 import { PesaJet } from &quot;npm:@pesajet/sdk@1.0.3&quot;;
 const URL=Deno.env.get(&#x27;SUPABASE_URL&#x27;)!;
@@ -1321,9 +1279,8 @@ serve(async(req)=&gt;{
  }catch(e){console.error(&#x27;PesaJet checkout error&#x27;,e);return json({error:&#x27;Unable to process payment. Please retry or contact support.&#x27;},500)}
 });
 </script>
-  
 <!-- Source block 5: retained from original application without logic changes. -->
-<script type="text/plain" id="bundle-webhook">import { serve } from &quot;https://deno.land/std@0.224.0/http/server.ts&quot;;
+<script id="bundle-webhook" type="text/plain">import { serve } from &quot;https://deno.land/std@0.224.0/http/server.ts&quot;;
 import { createClient } from &quot;npm:@supabase/supabase-js@2&quot;;
 import { PesaJet } from &quot;npm:@pesajet/sdk@1.0.3&quot;;
 const admin=createClient(Deno.env.get(&#x27;SUPABASE_URL&#x27;)!,Deno.env.get(&#x27;SUPABASE_SERVICE_ROLE_KEY&#x27;)!,{auth:{persistSession:false}});
@@ -1364,14 +1321,13 @@ serve(async(req)=&gt;{
  }catch(e){console.error(&#x27;Webhook processing error&#x27;,e);return new Response(&#x27;Webhook processing failed&#x27;,{status:500})}
 });
 </script>
-  
 <!-- Source block 6: retained from original application without logic changes. -->
 <script>
 function drawlabSource(id){return document.getElementById('bundle-'+id).textContent;}
 function drawlabDownload(id,name){const blob=new Blob([drawlabSource(id)],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 async function drawlabCopy(id){try{await navigator.clipboard.writeText(drawlabSource(id));document.getElementById('setupFeedback').textContent='SQL copied to clipboard.';}catch(e){document.getElementById('setupFeedback').textContent='Clipboard blocked; use Download schema.sql instead.';}}
 </script>
- <script id="foot1x2-engine">
+<script id="foot1x2-engine">
 /* FOOT1X2 ADVANCED DRAW LAB — independent, explainable score-probability model.
    Uses no private keys or external requests. Existing marketplace/auth/payment
    JavaScript is deliberately unchanged. */
