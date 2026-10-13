@@ -943,13 +943,14 @@ $('connect').onclick=async()=>{const url=$('sbUrl').value.trim().replace(/\/$/,'
   if(!client){authNotice('Supabase is not connected. The site administrator must configure the Render environment variables.');return;}
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){authNotice('Enter a valid email address.');return;}
   if(!password){authNotice('Enter your password.');return;}
+  if(mode==='signup' && password.length<8){authNotice('Choose a password of at least 8 characters.');return;}
   button.disabled=true;authNotice(mode==='signup'?'Creating your account…':'Signing in…');
   try{
     const result=mode==='signup'?await client.auth.signUp({email,password}):await client.auth.signInWithPassword({email,password});
     if(result.error)throw result.error;
-    authNotice(mode==='signup'?(result.data.session?'Account created and signed in.':'Registration submitted. Check your email for the confirmation link, then sign in.'):'Signed in successfully.');
+    authNotice(mode==='signup'?(result.data.session?'Account created. You are signed in without email confirmation.':'Account created, but Supabase did not issue a session. Ask the administrator to disable Confirm Email under Authentication → Providers → Email; then try signing in.'):'Signed in successfully.');
     if(result.data.session){user=result.data.session.user;toggleAuth();await loadHistory();}
-  }catch(e){authNotice((mode==='signup'?'Sign up':'Sign in')+' failed: '+e.message);}
+  }catch(e){const detail=/rate limit/i.test(e.message)?'Supabase has limited authentication requests. Wait before retrying; disabling email confirmation avoids confirmation-email delivery but does not remove all rate limits.':e.message;authNotice((mode==='signup'?'Sign up':'Sign in')+' failed: '+detail);}
   finally{button.disabled=false;}
 }
 $('login').onclick=()=>submitAuth('login');$('signup').onclick=()=>submitAuth('signup');$('logout').onclick=async()=>{if(client)await client.auth.signOut();user=null;toggleAuth();await loadHistory();msg('Signed out.')};$('reset').onclick=()=>{for(const id of fields){if(['home','away','league','kickoff','homeXg','awayXg'].includes(id))$(id).value=''}current=null;$('drawProbability').textContent='—';$('probabilities').replaceChildren();$('drawScores').textContent='Calculate a match to see scores.';$('expected').textContent='';msg('Match fields cleared. Statistical defaults retained.')};const saved=getConfig();if(saved){$('sbUrl').value=saved.url;$('sbKey').value=saved.key}initClient();

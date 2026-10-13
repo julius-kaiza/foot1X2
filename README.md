@@ -31,3 +31,8 @@ Upload the contents of this folder to your GitHub repository ROOT (replace the p
 **Do not set** `SUPABASE_SERVICE_ROLE_KEY`, PesaJet secrets or football provider tokens in browser config. Edge Functions must be deployed separately in Supabase; TypeScript files in GitHub are not executed by Node. This Node server only hosts the existing application; it does not move the prediction/payment logic to Node.
 
 Security: the Node server serves only the frontend files and `assets/`; SQL, README, and `.ts` are not publicly served. Render `_headers` is not processed by Node; equivalent headers are emitted by server.js.
+
+
+## Authentication repair
+The frontend now displays authentication errors beside the header controls, handles missing Render configuration, checks session state without failing on an absent session, and guards sign-in/sign-up requests.
+Set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in Render Environment, redeploy, then visit `/config.js` to confirm the public project URL and publishable key are present (never a service-role key). In Supabase Authentication, enable Email provider and set the Site URL and Redirect URLs to your Render domain. Supabase library loads from esm.sh, which must be reachable from customer browsers.
