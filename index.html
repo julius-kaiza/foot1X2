@@ -1706,6 +1706,7 @@ async function merchantRead(db){
     $m('merchantPhone').value=row.phone||row.phone_number||'';
     merchantStatus('Receiving account loaded from Supabase. '+(row.provider_status||'Settlement requires provider approval.'));
   }else merchantStatus('No receiving account saved yet. Enter your number and click Save.');
+  return row || null;
 }
 async function merchantLoad(){
   if(merchantBusy)return;
@@ -1723,8 +1724,11 @@ $m('merchantSave').addEventListener('click',async()=>{
     if(result.error?.code==='PGRST202'||result.error?.code==='42883')result=await db.rpc('save_receiving_account',{p_provider:provider,p_phone_number:phone});
     if(result.error)throw result.error;
     merchantLoadedFor=userId;
-    await merchantRead(db); // Read back from the database to verify persistence.
-    merchantStatus('Saved and verified in Supabase: '+provider.toUpperCase()+' '+phone+'. Actual payout requires PesaJet settlement approval.');
+    const saved=await merchantRead(db); // Read back from database, never trust a write response alone.
+    if(!saved || saved.provider!==provider || normalizeUgPhone(saved.phone||saved.phone_number)!==phone){
+      throw Error('The receiving number could not be verified in Supabase. Please try again.');
+    }
+    merchantStatus('Saved and verified in Supabase: '+provider.toUpperCase()+' '+phone+'. Refresh this page to confirm it reloads. Actual payout requires PesaJet settlement approval.');
   }catch(e){merchantStatus('Save failed — not persisted: '+e.message)}
   finally{button.disabled=false;}
 });
