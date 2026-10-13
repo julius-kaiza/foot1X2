@@ -182,12 +182,12 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 </section>
 <section class="panel admin-only" id="merchantSettlementPanel" style="margin:0 0 24px;border:2px solid #39c6a2;scroll-margin-top:85px">
 <h2>💰 Admin Account — Mobile Money receiving number</h2>
-<p class="muted">Only a verified Super Admin can view or change this receiving account. Enter the number where you want Foot1X2 payments settled. This saves your receiving account securely. Actual transfers depend on PesaJet enabling that number as your merchant settlement destination.</p>
+<p class="muted">Only a verified Super Admin can view or change this receiving account. Enter the number where you want Foot1X2 payments settled. This saves your receiving account persistently in Supabase across browsers and deployments when the included database migration is installed. Actual transfers require PesaJet to configure and approve the same settlement destination; saving a number here alone does not redirect payouts.</p>
 <div class="fields"><div class="field"><label for="merchantNetwork">My receiving network</label><select id="merchantNetwork"><option value="mtn">MTN Mobile Money</option><option value="airtel">Airtel Money</option></select></div>
 <div class="field"><label for="merchantPhone">My receiving phone number</label><input id="merchantPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+256750173581" aria-describedby="merchantPhoneHelp"/></div></div>
 <p class="muted" id="merchantPhoneHelp">This is YOUR receiving number, not the customer's payment number.</p>
 <div class="actions"><button id="merchantSave" type="button">Save my receiving number</button><button id="merchantReload" type="button" class="secondary">View saved receiving number</button></div>
-<p id="merchantStatus" class="status" role="status" aria-live="polite">Sign in as Super Admin to save your receiving number.</p>
+<p id="merchantStatus" class="status" role="status" aria-live="polite">Sign in as Super Admin. Install the included settlement migration before saving.</p>
 </section>
 <section aria-labelledby="customerTitle" class="customer-welcome panel" id="customerWelcome">
 <span class="eyebrow">FOOT1X2 · MEMBER EXPERIENCE</span>
@@ -372,7 +372,7 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <section class="admin-only full panel" id="fixtureWorkspace">
 <h2>
       Automatic football fixtures &amp; draw ranking
-     </h2><div class="foot-live-controls"><label for="fixtureSort">Rank by</label><select id="fixtureSort"><option value="draw">Draw (X)</option><option value="homeWin">Home win (1)</option><option value="awayWin">Away win (2)</option><option value="under25">Under 2.5</option><option value="over25">Over 2.5</option><option value="btts">Both teams score</option></select><label for="minEvidence">Minimum home/away matches</label><select id="minEvidence"><option value="3">3</option><option selected="" value="5">5</option><option value="8">8</option></select><button class="secondary" id="exportFixtures" type="button">Export analysis CSV</button></div><p class="muted">Official fixtures and final scores are fetched from football-data.org through your secure Supabase function. Predictions are generated automatically from observed team form. Missing history is shown as insufficient evidence, never fabricated.</p><div class="scroll"><table><thead><tr><th>Team</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th></tr></thead><tbody id="liveStandings"><tr><td colspan="8">Fetch a league to calculate its table from available finished matches.</td></tr></tbody></table></div><h3>Automated match predictions</h3><div class="scroll"><table><thead><tr><th>Kickoff</th><th>Fixture</th><th>1</th><th>X</th><th>2</th><th>U2.5</th><th>O2.5</th><th>BTTS</th><th>Likely score</th><th>Sample</th><th>Action</th></tr></thead><tbody id="autoPredictions"><tr><td colspan="11">Choose a competition and click Fetch fixtures &amp; rank draws.</td></tr></tbody></table></div>
+     </h2><div class="foot-live-controls"><label for="fixtureSort">Rank by</label><select id="fixtureSort"><option value="draw">Draw (X)</option><option value="homeWin">Home win (1)</option><option value="awayWin">Away win (2)</option><option value="under25">Under 2.5</option><option value="over25">Over 2.5</option><option value="btts">Both teams score</option></select><label for="minEvidence">Minimum home/away matches</label><select id="minEvidence"><option value="0" selected>0 (include sparse data)</option><option value="1">1</option><option value="3">3</option><option value="5">5</option><option value="8">8</option></select><button class="secondary" id="exportFixtures" type="button">Export analysis CSV</button></div><p class="muted">Official fixtures and final scores are fetched from football-data.org through your secure Supabase function. Predictions are generated automatically from observed team form. Missing history is shown as insufficient evidence, never fabricated.</p><div class="scroll"><table><thead><tr><th>Team</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th></tr></thead><tbody id="liveStandings"><tr><td colspan="8">Fetch a league to calculate its table from available finished matches.</td></tr></tbody></table></div><h3>Automated match predictions</h3><div class="scroll"><table><thead><tr><th>Kickoff</th><th>Fixture</th><th>1</th><th>X</th><th>2</th><th>U2.5</th><th>O2.5</th><th>BTTS</th><th>Likely score</th><th>Sample</th><th>Action</th></tr></thead><tbody id="autoPredictions"><tr><td colspan="11">Choose a competition and click Fetch fixtures &amp; rank draws.</td></tr></tbody></table></div>
 <p class="muted">
       Import scheduled matches and recent league results securely through a Supabase Edge Function. Goals-based estimates are computed from finished matches; xG is not supplied by this provider. Requires sign-in and a deployed Edge Function.
      </p>
@@ -821,8 +821,9 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <div class="fx-kpis fx-secondary"><div><small>Under 2.5 goals</small><strong id="fxUnder">—</strong></div><div><small>Both teams score</small><strong id="fxBTTS">—</strong></div><div><small>0–0</small><strong id="fx00">—</strong></div><div><small>1–1</small><strong id="fx11">—</strong></div><div><small>2–2</small><strong id="fx22">—</strong></div></div>
 <div class="fx-columns"><div><h3>Exact score probability matrix</h3><p class="muted">Home goals on rows; away goals on columns. Probabilities are calculated from the normalized score distribution.</p><div class="fx-tablewrap"><table class="fx-matrix" id="fxMatrix"><tbody></tbody></table></div></div><div><h3>Draw intelligence</h3><div class="fx-explanation" id="fxExplanation">Calculate a match to inspect its draw profile.</div><h3>Model comparison</h3><div class="fx-explanation" id="fxCompare">Standard Poisson and Dixon–Coles adjustments will appear here.</div><p class="muted">The threshold is a user-selected screening rule, not a validated accuracy or confidence measure. No model can guarantee a draw.</p></div></div>
 </section>
-<section class="panel full" id="universalMarkets"><h2>Data-driven prediction markets</h2><p class="muted">Select a fixture after fetching its league results. Every probability is calculated from that fixture's historical match data. No example probabilities are shown as real forecasts.</p><div class="fields"><div class="field wide"><label for="marketFixtureSelect">Fixture with verified historical data</label><select id="marketFixtureSelect"><option value="">Fetch fixtures first — no analysed match yet</option></select></div></div><div class="actions"><button id="marketFetchFixtures" type="button">Fetch fixtures and analyse</button><button id="marketAnalyze" type="button">Calculate markets for selected fixture</button><button id="marketExport" class="secondary" type="button">Export markets CSV</button></div><p id="marketEngineStatus" class="status" role="status">No match analysed yet. Fetch official fixtures, then select a match.</p><div id="marketEvidence" class="notice hidden"></div><div class="scroll"><table><thead><tr><th>Market</th><th>Selection</th><th>Probability</th><th>Fair decimal odds</th></tr></thead><tbody id="marketEngineRows"><tr><td colspan="4">Awaiting fixture data.</td></tr></tbody></table></div><h3>Most likely exact scores</h3><div id="marketExactScores" class="scores"></div></section>
+<section class="panel full" id="universalMarkets"><h2>Data-driven prediction markets</h2><p class="notice">Sparse-data predictions use league priors and Bayesian shrinkage. Zero historical team matches means very low evidence, not a guaranteed selection. Draw-no-bet probabilities are conditional on no draw; a draw refunds the stake. No model guarantees winning results.</p><p class="muted">Select a fixture after fetching its league results. Every probability is calculated from that fixture's historical match data. No example probabilities are shown as real forecasts.</p><div class="fields"><div class="field wide"><label for="marketFixtureSelect">Fixture with verified historical data</label><select id="marketFixtureSelect"><option value="">Fetch fixtures first — no analysed match yet</option></select></div></div><div class="actions"><button id="marketFetchFixtures" type="button">Fetch fixtures and analyse</button><button id="marketAnalyze" type="button">Calculate markets for selected fixture</button><button id="marketExport" class="secondary" type="button">Export markets CSV</button></div><p id="marketEngineStatus" class="status" role="status">No match analysed yet. Fetch official fixtures, then select a match.</p><div id="marketEvidence" class="notice hidden"></div><div class="scroll"><table><thead><tr><th>Market</th><th>Selection</th><th>Probability</th><th>Fair decimal odds</th></tr></thead><tbody id="marketEngineRows"><tr><td colspan="4">Awaiting fixture data.</td></tr></tbody></table></div><h3>Most likely exact scores</h3><div id="marketExactScores" class="scores"></div></section>
 
+<section class="panel admin-only" id="settlementReadiness" style="border-color:#43786e"><h2>Settlement deployment check</h2><p class="muted">The receiving number is stored in Supabase, not in this HTML or browser storage. Deploy the included SQL migration, sign in as Super Admin, save the account, reload the page and verify the saved number. Your payment provider must separately approve the settlement account. Customer subscription payments must always be verified by the backend before access is granted.</p></section>
 </main>
 <!-- Source block 1: retained from original application without logic changes. -->
 <script src="./config.js"></script>
@@ -890,7 +891,7 @@ function inferFixture(f,finished){
    Number.isInteger(m.score?.fullTime?.away)&&m.score.fullTime.home>=0&&m.score.fullTime.away>=0);
  const home=past.filter(m=>m.homeTeam?.id===f.homeTeam?.id).slice(-30);
  const away=past.filter(m=>m.awayTeam?.id===f.awayTeam?.id).slice(-30);
- if(home.length<5||away.length<5||past.length<20)return null;
+ if(past.length<3)return null; // Use observed league priors for sparse team samples; never invent results.
  const weight=m=>Math.pow(.5,Math.max(0,(kickoff-Date.parse(m.utcDate))/86400000)/90);
  const mean=(games,side)=>{let n=0,s=0;for(const m of games){const w=weight(m);n+=w;s+=w*m.score.fullTime[side]}return n>0?s/n:NaN};
  const leagueHome=mean(past,'home'),leagueAway=mean(past,'away');
@@ -903,7 +904,7 @@ function inferFixture(f,finished){
  const h=clamp(leagueHome*(hs/leagueHome)*(ac/leagueHome),.12,5.5);
  const a=clamp(leagueAway*(as/leagueAway)*(hc/leagueAway),.12,5.5);
  // Correlation correction is a conservative preset, not learned from this sample.
- const rho=-.08;let homeWin=0,awayWin=0,draw=0,under25=0,btts=0,sum=0;
+ const rho=Math.min(home.length,away.length)<8?0:-.08;let homeWin=0,awayWin=0,draw=0,under25=0,btts=0,sum=0;
  let topScore={score:'0–0',p:0};
  for(let i=0;i<=20;i++)for(let j=0;j<=20;j++){
   const p=poisson(i,h)*poisson(j,a)*tau(i,j,h,a,rho);
@@ -918,7 +919,7 @@ function inferFixture(f,finished){
  return {f,h,a,under25:under25/sum,over25:1-under25/sum,btts:btts/sum,
   topScore:topScore.score,draw:probs[1],homeWin:probs[0],awayWin:probs[2],
   homeN:home.length,awayN:away.length,effectiveSample:+effectiveSample.toFixed(1),
-  stats:{hs,hc,as,ac,leagueHome,leagueAway},modelVersion:'weighted-poisson-dc-v2'};
+  stats:{hs,hc,as,ac,leagueHome,leagueAway},evidenceLevel:Math.min(home.length,away.length)<3?'Very limited':Math.min(home.length,away.length)<8?'Limited':Math.min(home.length,away.length)<20?'Moderate':'Higher',modelVersion:'bayesian-shrinkage-poisson-v3'};
 }
 
 // FOOT1X2 AUTOMATED FIXTURE INTELLIGENCE
@@ -1662,7 +1663,7 @@ const nonDraw=1-events['Full time|Draw (X)'].p;for(const key of ['Draw no bet|Ho
 return {rows:Object.values(events),scores:dist.scores};}
 let selectedFixtures=[];
 function clearMarkets(message){rows=[];$('marketEngineRows').replaceChildren();const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=4;td.textContent=message;tr.append(td);$('marketEngineRows').append(tr);$('marketExactScores').replaceChildren();$('marketEvidence').classList.add('hidden');$('marketEngineStatus').textContent=message;}
-function render(){const index=$('marketFixtureSelect').value;if(index==='')throw Error('Fetch official fixtures and select a match first.');const r=selectedFixtures[Number(index)];if(!r||!(r.h>0&&r.a>0)||!r.stats)throw Error('No verified historical model data for this fixture.');const result=analyze(r.h,r.a,-.08);rows=result.rows;const body=$('marketEngineRows');body.replaceChildren();for(const v of rows){const tr=document.createElement('tr');for(const x of [v.market,v.selection,(v.p*100).toFixed(2)+'%',v.p>0?(1/v.p).toFixed(2):'—']){const td=document.createElement('td');td.textContent=x;tr.append(td)}body.append(tr)}const scores=$('marketExactScores');scores.replaceChildren();for(const v of result.scores.slice(0,9)){const div=document.createElement('div');div.className='score';const strong=document.createElement('strong');strong.textContent=v.i+'–'+v.j;const small=document.createElement('small');small.textContent=(100*v.p).toFixed(2)+'%';div.append(strong,small);scores.append(div)}const evidence=$('marketEvidence');evidence.classList.remove('hidden');evidence.textContent='Match: '+r.f.homeTeam.name+' vs '+r.f.awayTeam.name+' | Kickoff: '+new Date(r.f.utcDate).toLocaleString()+' | Historical samples: '+r.homeN+' home, '+r.awayN+' away | Estimated goals: '+r.h.toFixed(3)+' / '+r.a.toFixed(3)+' | Model: time-weighted goals, league shrinkage, Dixon–Coles preset ρ = -0.08. Provider does not supply xG, injuries or betting odds.';$('marketEngineStatus').textContent='Calculated '+rows.length+' fixture-specific markets from fetched match history. Fair odds are model-derived, without bookmaker margin; predictions are not guarantees.';}
+function render(){const index=$('marketFixtureSelect').value;if(index==='')throw Error('Fetch official fixtures and select a match first.');const r=selectedFixtures[Number(index)];if(!r||!(r.h>0&&r.a>0)||!r.stats)throw Error('No verified historical model data for this fixture.');const result=analyze(r.h,r.a,Math.min(r.homeN,r.awayN)<8?0:-.08);rows=result.rows;const body=$('marketEngineRows');body.replaceChildren();for(const v of rows){const tr=document.createElement('tr');for(const x of [v.market,v.selection,(v.p*100).toFixed(2)+'%',v.p>0?(1/v.p).toFixed(2):'—']){const td=document.createElement('td');td.textContent=x;tr.append(td)}body.append(tr)}const scores=$('marketExactScores');scores.replaceChildren();for(const v of result.scores.slice(0,9)){const div=document.createElement('div');div.className='score';const strong=document.createElement('strong');strong.textContent=v.i+'–'+v.j;const small=document.createElement('small');small.textContent=(100*v.p).toFixed(2)+'%';div.append(strong,small);scores.append(div)}const evidence=$('marketEvidence');evidence.classList.remove('hidden');evidence.textContent='Match: '+r.f.homeTeam.name+' vs '+r.f.awayTeam.name+' | Kickoff: '+new Date(r.f.utcDate).toLocaleString()+' | Historical samples: '+r.homeN+' home, '+r.awayN+' away | Estimated goals: '+r.h.toFixed(3)+' / '+r.a.toFixed(3)+' | Model: time-weighted goals, league shrinkage, Dixon–Coles preset ρ = -0.08. Provider does not supply xG, injuries or betting odds.';$('marketEngineStatus').textContent='Calculated '+rows.length+' fixture-specific markets from fetched match history. Fair odds are model-derived, without bookmaker margin; predictions are not guarantees.';}
 window.addEventListener('foot1x2:fixturesAnalyzed',e=>{selectedFixtures=Array.isArray(e.detail?.ranked)?e.detail.ranked:[];const sel=$('marketFixtureSelect');sel.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent=selectedFixtures.length?'Select a fixture to analyse':'No eligible fixtures with sufficient history';sel.append(empty);selectedFixtures.forEach((r,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=r.f.homeTeam.name+' vs '+r.f.awayTeam.name+' · '+new Date(r.f.utcDate).toLocaleString();sel.append(o)});clearMarkets(selectedFixtures.length?'Fetched '+selectedFixtures.length+' eligible fixtures. Select one to calculate its markets.':'No eligible fixtures. Choose another league or date range.');if(selectedFixtures.length){sel.value='0';try{render()}catch(err){clearMarkets(err.message)}}});
 $('marketAnalyze').onclick=()=>{try{render()}catch(e){clearMarkets(e.message)}};
 $('marketFixtureSelect').onchange=()=>{try{render()}catch(e){clearMarkets(e.message)}};
@@ -1697,14 +1698,13 @@ async function merchantClient(){
 }
 async function merchantRead(db){
   // Compatible with both supplied Foot1X2 receiving-account SQL versions.
-  let result=await db.rpc('get_merchant_settlement');
-  if(result.error?.code==='PGRST202'||result.error?.code==='42883')result=await db.rpc('get_receiving_account');
+  let result=await db.rpc('foot1x2_get_settlement_v2');
   if(result.error)throw result.error;
   const row=Array.isArray(result.data)?result.data[0]:result.data;
   if(row){
     $m('merchantNetwork').value=row.provider;
     $m('merchantPhone').value=row.phone||row.phone_number||'';
-    merchantStatus('Receiving account loaded from Supabase. '+(row.provider_status||'Settlement requires provider approval.'));
+    merchantStatus('Persisted account loaded from Supabase. Last updated: '+(row.updated_at?new Date(row.updated_at).toLocaleString():'unknown')+'. '+(row.provider_status||'Settlement requires provider approval.'));
   }else merchantStatus('No receiving account saved yet. Enter your number and click Save.');
   return row || null;
 }
@@ -1720,8 +1720,7 @@ $m('merchantSave').addEventListener('click',async()=>{
   try{
     const phone=normalizeUgPhone($m('merchantPhone').value),provider=$m('merchantNetwork').value;
     const {db,userId}=await merchantClient();
-    let result=await db.rpc('save_merchant_settlement',{p_provider:provider,p_phone:phone});
-    if(result.error?.code==='PGRST202'||result.error?.code==='42883')result=await db.rpc('save_receiving_account',{p_provider:provider,p_phone_number:phone});
+    let result=await db.rpc('foot1x2_save_settlement_v2',{p_provider:provider,p_phone:phone});
     if(result.error)throw result.error;
     merchantLoadedFor=userId;
     const saved=await merchantRead(db); // Read back from database, never trust a write response alone.
@@ -1735,6 +1734,7 @@ $m('merchantSave').addEventListener('click',async()=>{
 $m('merchantReload').addEventListener('click',merchantLoad);
 $m('adminAccountNav')?.addEventListener('click',()=>{setTimeout(merchantLoad,50)});
 // Refresh after a verified administrator signs in; clear stale values on logout.
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.body.classList.contains('role-admin')){merchantLoadedFor=null;merchantLoad();}});
 setInterval(async()=>{
   if(!document.body.classList.contains('role-admin')){
     merchantLoadedFor=null;$m('merchantPhone').value='';return;
@@ -1742,6 +1742,30 @@ setInterval(async()=>{
   if(merchantBusy||merchantLoadedFor)return;
   await merchantLoad();
 },1500);
+</script>
+
+<section class="panel admin-only" id="modelAudit" aria-label="Prediction quality audit">
+<h2>Prediction quality &amp; backtesting</h2>
+<p class="muted">Evaluate saved 1X2 probabilities against completed results. Brier score is lower-is-better. Results must be recorded before they can be evaluated. This is an in-browser audit; it does not modify published tips or payment records.</p>
+<div class="actions"><button type="button" id="auditRefresh" class="secondary">Evaluate saved results</button></div>
+<p id="auditStatus" class="status" aria-live="polite">Waiting for completed saved predictions.</p>
+<div class="scores" id="auditMetrics"></div>
+</section>
+<script id="foot1x2-quality-audit">
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+$('auditRefresh').addEventListener('click',()=>{
+ let records=[];try{records=JSON.parse(localStorage.getItem('drawlab_local_predictions')||'[]')}catch{}
+ const valid=records.filter(r=>Number.isInteger(r.actual_home)&&Number.isInteger(r.actual_away)&&[r.home_win_probability,r.draw_probability,r.away_win_probability].every(p=>Number.isFinite(p)&&p>=0&&p<=1));
+ const box=$('auditMetrics');box.replaceChildren();
+ if(!valid.length){$('auditStatus').textContent='No completed local predictions to evaluate. Sign-in synchronized history is not included in this local audit.';return}
+ let brier=0,correct=0,logloss=0;
+ for(const r of valid){const actual=r.actual_home>r.actual_away?0:r.actual_home===r.actual_away?1:2;const ps=[r.home_win_probability,r.draw_probability,r.away_win_probability];const sum=ps.reduce((a,b)=>a+b,0);if(!(sum>0))continue;const norm=ps.map(p=>p/sum);brier+=norm.reduce((a,p,i)=>a+(p-(i===actual?1:0))**2,0);logloss-=Math.log(Math.max(1e-12,norm[actual]));if(norm.indexOf(Math.max(...norm))===actual)correct++}
+ const items=[['Completed',valid.length],['Top-pick accuracy',(100*correct/valid.length).toFixed(1)+'%'],['Mean Brier',(brier/valid.length).toFixed(4)],['Mean log loss',(logloss/valid.length).toFixed(4)]];
+ for(const [label,value] of items){const d=document.createElement('div');d.className='score';const t=document.createElement('small');t.textContent=label;const v=document.createElement('strong');v.textContent=value;d.append(v,t);box.append(d)}
+ $('auditStatus').textContent='Descriptive in-sample audit only. Use chronological holdout seasons to validate forecasting performance.';
+});
+})();
 </script>
 </body>
 </html>
