@@ -92,8 +92,33 @@ tr:hover td { background: rgba(255,255,255,.025); }
  <style id="foot1x2-design">
 #foot1x2Lab{margin:26px 0;border:1px solid #2e655a;background:linear-gradient(135deg,#102b32,#132338);padding:26px}.fx-top{display:flex;justify-content:space-between;gap:20px;align-items:start}.fx-pill{border:1px solid #327967;border-radius:999px;padding:9px 12px;font-size:12px;color:#91ecd3;white-space:nowrap}.fx-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.fx-fields label{display:flex;flex-direction:column;gap:8px;font-size:12px;color:#c3d6e5}.fx-fields input{width:100%;box-sizing:border-box;background:#0b1928;border:1px solid #385568;color:#fff;padding:11px;border-radius:9px}.fx-actions{display:flex;gap:9px;flex-wrap:wrap}.fx-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0}.fx-kpis>div{background:#0c1d2d;border:1px solid #2a4b5d;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:9px}.fx-kpis small{font-size:12px;color:#aac5d6}.fx-kpis strong{font-size:27px;color:#fff;font-variant-numeric:tabular-nums}.fx-kpis .fx-feature{border-color:#39c6a2;background:#123b3b}.fx-kpis .fx-feature strong{color:#7ef1d1}.fx-secondary{grid-template-columns:repeat(5,minmax(0,1fr))}.fx-secondary strong{font-size:20px}.fx-bars{display:grid;gap:9px}.fx-bar{display:grid;grid-template-columns:110px 1fr 65px;gap:10px;align-items:center;font-size:12px}.fx-bar>div{height:11px;border-radius:99px;background:#0b1826;overflow:hidden}.fx-bar i{display:block;height:100%;background:#4d94d5;border-radius:99px}.fx-bar.draw i{background:#35d6a5}.fx-bar.away i{background:#f2b85d}.fx-columns{display:grid;grid-template-columns:1.25fr 1fr;gap:25px;margin-top:22px}.fx-tablewrap{overflow:auto}.fx-matrix{width:100%;border-collapse:collapse;text-align:center;font-size:12px}.fx-matrix th,.fx-matrix td{padding:10px 6px;border:1px solid #29495c}.fx-matrix th{background:#1d3448;color:#c6e5ef}.fx-matrix td{background:#0e2233;font-variant-numeric:tabular-nums}.fx-matrix td.fx-diagonal{background:#145445;color:#d2fff0;font-weight:800}.fx-explanation{line-height:1.7;font-size:13px;background:#0d2030;border:1px solid #2d4c5e;padding:14px;border-radius:12px;color:#d4e5ee}.fx-explanation p{margin:0 0 9px}.fx-explanation p:last-child{margin:0}@media(max-width:850px){.fx-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.fx-columns{grid-template-columns:1fr}.fx-kpis,.fx-secondary{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){#foot1x2Lab{padding:14px}.fx-top{display:block}.fx-fields{grid-template-columns:1fr}.fx-kpis strong{font-size:22px}.fx-bar{grid-template-columns:70px 1fr 55px}}
 </style>
+<style id="foot1x2-role-design">
+/* ======================================================================
+   FOOT1X2 ROLE-BASED WORKSPACES
+   Customer mode is the default. Administrative UI is displayed ONLY after
+   the authenticated Supabase is_super_admin() RPC returns true.
+   IMPORTANT: Visibility is not authorization. Enforce database RLS, RPC
+   permissions, and paid-tip redaction server-side as well.
+   ====================================================================== */
+body:not(.role-admin) .admin-only {display:none!important}
+body.role-admin .customer-welcome {display:none!important}
+body.role-customer .grid {display:block}
+body.role-customer .workspace-nav a.admin-only {display:none!important}
+.customer-welcome {background:linear-gradient(120deg,#153a3c,#122339 65%,#192f4b);border:1px solid #356d68;padding:clamp(22px,4vw,42px);margin:22px 0 26px}
+.customer-welcome h2 {font-size:clamp(25px,3vw,36px);line-height:1.18;max-width:680px;letter-spacing:-.035em;margin:10px 0 12px}
+.customer-welcome p {max-width:750px;line-height:1.75}
+.customer-benefits {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:24px 0}
+.customer-benefits div {background:#0a1b2bbd;border:1px solid #345568;border-radius:12px;padding:17px;display:flex;flex-direction:column;gap:7px}
+.customer-benefits strong {font-size:15px;color:#e5fff5}
+.customer-benefits span {font-size:12px;color:#b7cddd}
+.customer-cta {display:inline-flex;text-decoration:none;color:#09261f;background:#4ce0b8;padding:13px 18px;border-radius:10px;font-weight:800}
+.customer-cta:hover {background:#83f1d1}
+.customer-note {font-size:12px;color:#b3c7d8;margin-top:20px}
+@media(max-width:750px){.customer-benefits{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:390px){.customer-benefits{grid-template-columns:1fr}}
+</style>
 </head>
- <body>
+ <body class="role-customer">
   <header>
    <div class="brand">
     ⚽ Foot
@@ -118,26 +143,26 @@ tr:hover td { background: rgba(255,255,255,.025); }
     </button>
    </div>
   </header>
-  <nav aria-label="Application sections" class="workspace-nav">
+  <nav aria-label="Foot1X2 navigation" class="workspace-nav">
    <a href="#workspace">
     Overview
    </a>
-   <a href="#predictionWorkspace">
+   <a class="admin-only" href="#predictionWorkspace">
     Prediction model
    </a>
-   <a href="#foot1x2Lab">Draw laboratory</a><a href="#fixtureWorkspace">
+   <a class="admin-only" href="#foot1x2Lab">Draw laboratory</a><a class="admin-only" href="#fixtureWorkspace">
     Fixtures
    </a>
-   <a href="#historyWorkspace">
+   <a class="admin-only" href="#historyWorkspace">
     History
    </a>
    <a href="#marketplaceWorkspace">
     Premium tips
    </a>
-   <a href="#adminPanel">
+   <a class="admin-only" href="#adminPanel">
     Super Admin
    </a>
-   <a href="#setupBundle">
+   <a class="admin-only" href="#setupBundle">
     Deployment
    </a>
   </nav>
@@ -147,14 +172,23 @@ tr:hover td { background: rgba(255,255,255,.025); }
      FOOT1X2 • FOOTBALL INTELLIGENCE
     </span>
     <h1>
-     Football predictions, built on statistical evidence.
+     Foot1X2: match insights, intelligently selected.
     </h1>
     <p class="muted">
      Compare 1/X/2 probabilities, investigate likely draws, explore correct scores and publish premium predictions backed by transparent models.
     </p>
    </section>
-   <div class="grid">
-    <section id="predictionWorkspace">
+   
+<section class="customer-welcome panel" id="customerWelcome" aria-labelledby="customerTitle">
+ <span class="eyebrow">FOOT1X2 · MEMBER EXPERIENCE</span>
+ <h2 id="customerTitle">Explore football predictions selected for you</h2>
+ <p class="muted">Browse published match analysis and free predictions. Premium selections unlock only after your purchase is confirmed. All match publishing, pricing and availability are managed by Foot1X2.</p>
+ <div class="customer-benefits"><div><strong>1 · Home win</strong><span>Published match picks</span></div><div><strong>X · Draw</strong><span>Draw probabilities</span></div><div><strong>2 · Away win</strong><span>Away selections</span></div><div><strong>Goals markets</strong><span>Under/over 2.5</span></div></div>
+ <a class="customer-cta" href="#marketplaceWorkspace">Browse published predictions →</a>
+ <p class="customer-note">Predictions are statistical estimates, not guarantees. Only published, permitted tips should be returned by the server.</p>
+</section>
+<div class="grid">
+    <section class="admin-only" id="predictionWorkspace">
      <div class="panel">
       <h2>
        Match and team statistics
@@ -324,7 +358,7 @@ tr:hover td { background: rgba(255,255,255,.025); }
       </p>
      </div>
     </section>
-    <section class="full panel" id="fixtureWorkspace">
+    <section class="admin-only full panel" id="fixtureWorkspace">
      <h2>
       Automatic football fixtures &amp; draw ranking
      </h2><div class="foot-live-controls"><label for="fixtureSort">Rank by</label><select id="fixtureSort"><option value="draw">Draw (X)</option><option value="homeWin">Home win (1)</option><option value="awayWin">Away win (2)</option><option value="under25">Under 2.5</option><option value="over25">Over 2.5</option><option value="btts">Both teams score</option></select><label for="minEvidence">Minimum home/away matches</label><select id="minEvidence"><option value="3">3</option><option value="5" selected>5</option><option value="8">8</option></select><button id="exportFixtures" class="secondary" type="button">Export analysis CSV</button></div><p class="muted">Official fixtures and final scores are fetched from football-data.org through your secure Supabase function. Predictions are generated automatically from observed team form. Missing history is shown as insufficient evidence, never fabricated.</p><div class="scroll"><table><thead><tr><th>Team</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th></tr></thead><tbody id="liveStandings"><tr><td colspan="8">Fetch a league to calculate its table from available finished matches.</td></tr></tbody></table></div><h3>Automated match predictions</h3><div class="scroll"><table><thead><tr><th>Kickoff</th><th>Fixture</th><th>1</th><th>X</th><th>2</th><th>U2.5</th><th>O2.5</th><th>BTTS</th><th>Likely score</th><th>Sample</th><th>Action</th></tr></thead><tbody id="autoPredictions"><tr><td colspan="11">Choose a competition and click Fetch fixtures &amp; rank draws.</td></tr></tbody></table></div>
@@ -432,7 +466,7 @@ tr:hover td { background: rgba(255,255,255,.025); }
       </table>
      </div>
     </section>
-    <section class="full panel" id="historyWorkspace">
+    <section class="admin-only full panel" id="historyWorkspace">
      <h2>
       Saved predictions and ranking
      </h2>
@@ -585,7 +619,7 @@ tr:hover td { background: rgba(255,255,255,.025); }
      </table>
     </div>
    </section>
-   <section aria-label="Super Administrator Control Centre" class="full panel hidden" id="adminPanel">
+   <section aria-label="Super Administrator Control Centre" class="full panel hidden admin-only" id="adminPanel">
     <h2>
      Super Admin Control Centre
     </h2>
@@ -740,7 +774,7 @@ tr:hover td { background: rgba(255,255,255,.025); }
     © Foot1X2 · Statistical football analysis · Probabilities are estimates, never guarantees. Verify payment and provider integrations before production use.
    </footer>
    
-<section class="panel full" id="foot1x2Lab" aria-labelledby="foot1x2Title">
+<section class="admin-only panel full" id="foot1x2Lab" aria-labelledby="foot1x2Title">
   <div class="fx-top"><div><span class="eyebrow">FOOT1X2 • RESEARCH WORKSPACE</span><h2 id="foot1x2Title">Advanced Draw & 1X2 Laboratory</h2><p class="muted">Independent mathematical estimates. Adjust expected goals, compare models and inspect exact score probabilities. This tool uses supplied inputs, not live team statistics.</p></div><span class="fx-pill">Probability-based · No guarantees</span></div>
   <div class="fx-fields"><label>Home team<input id="fxHome" value="Home team" maxlength="70"></label><label>Away team<input id="fxAway" value="Away team" maxlength="70"></label><label>Expected home goals (λ)<input id="fxLambdaH" type="number" min="0.05" max="6" step="0.05" value="1.25"></label><label>Expected away goals (λ)<input id="fxLambdaA" type="number" min="0.05" max="6" step="0.05" value="1.10"></label><label>Low-score correlation (ρ)<input id="fxRho" type="number" min="-0.3" max="0.3" step="0.01" value="-0.08"></label><label>Draw threshold (%)<input id="fxThreshold" type="number" min="10" max="70" step="1" value="30"></label></div>
   <div class="fx-actions"><button id="fxAnalyze">Analyze match</button><button id="fxFromCalculator" class="secondary">Use main calculator's current inputs</button><button id="fxExport" class="secondary">Export report CSV</button></div>
@@ -750,7 +784,7 @@ tr:hover td { background: rgba(255,255,255,.025); }
   <div class="fx-kpis fx-secondary"><div><small>Under 2.5 goals</small><strong id="fxUnder">—</strong></div><div><small>Both teams score</small><strong id="fxBTTS">—</strong></div><div><small>0–0</small><strong id="fx00">—</strong></div><div><small>1–1</small><strong id="fx11">—</strong></div><div><small>2–2</small><strong id="fx22">—</strong></div></div>
   <div class="fx-columns"><div><h3>Exact score probability matrix</h3><p class="muted">Home goals on rows; away goals on columns. Probabilities are calculated from the normalized score distribution.</p><div class="fx-tablewrap"><table class="fx-matrix" id="fxMatrix"><tbody></tbody></table></div></div><div><h3>Draw intelligence</h3><div id="fxExplanation" class="fx-explanation">Calculate a match to inspect its draw profile.</div><h3>Model comparison</h3><div id="fxCompare" class="fx-explanation">Standard Poisson and Dixon–Coles adjustments will appear here.</div><p class="muted">The threshold is a user-selected screening rule, not a validated accuracy or confidence measure. No model can guarantee a draw.</p></div></div>
 </section>
-<section class="panel" id="setupBundle">
+<section class="admin-only panel" id="setupBundle">
     <h2>
      Deployment &amp; Database Setup
     </h2>
@@ -795,7 +829,7 @@ function compute(){const data={};for(const id of fields)data[id]=$(id).value.tri
 function show(p){$('drawProbability').textContent=fmt(p.draw);$('expected').textContent=`Expected goals: ${p.data.home} ${p.h.toFixed(2)} — ${p.a.toFixed(2)} ${p.data.away}`;$('probabilities').replaceChildren();for(const [label,val,kind] of [['Home win',p.home,'home'],['Draw',p.draw,'draw'],['Away win',p.away,'away']]){const r=document.createElement('div');r.className='probrow';const t=document.createElement('span');t.textContent=label;const track=document.createElement('div');track.className='track';const fill=document.createElement('div');fill.className='fill '+kind;fill.style.width=fmt(val);track.append(fill);const v=document.createElement('strong');v.textContent=fmt(val);r.append(t,track,v);$('probabilities').append(r)}$('drawScores').replaceChildren();for(const s of p.score){const d=document.createElement('div');d.className='score';const b=document.createElement('strong');b.textContent=s.label;const small=document.createElement('small');small.textContent=fmt(s.p);d.append(b,small);$('drawScores').append(d)}}
 function readLocal(){try{return JSON.parse(localStorage.getItem(localKey)||'[]')}catch{return []}}function saveLocal(){localStorage.setItem(localKey,JSON.stringify(history))}function renderHistory(){const tbody=$('history');tbody.replaceChildren();if(!history.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='No saved predictions yet.';tr.append(td);tbody.append(tr);return}for(const p of [...history].sort((a,b)=>b.draw_probability-a.draw_probability)){const tr=document.createElement('tr');for(const text of [`${p.home_team} vs ${p.away_team}`,p.league||'—',fmt(p.draw_probability),`${p.expected_home.toFixed(2)} / ${p.expected_away.toFixed(2)}`,p.actual_home===null?'Pending':`${p.actual_home}–${p.actual_away}`]){const td=document.createElement('td');td.textContent=text;tr.append(td)}const td=document.createElement('td');const result=document.createElement('button');result.className='secondary';result.textContent='Set result';result.onclick=()=>setResult(p);const del=document.createElement('button');del.className='danger';del.textContent='Delete';del.style.marginLeft='6px';del.onclick=()=>deletePrediction(p);td.append(result,del);tr.append(td);tbody.append(tr)}}
 function getConfig(){try{return JSON.parse(localStorage.getItem(cfgKey)||'null')}catch{return null}}async function initClient(){const c=getConfig();client=null;user=null;if(!c){msg('Not connected: predictions saved locally.','connection');toggleAuth();history=readLocal();renderHistory();return}try{const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');client=createClient(c.url,c.key,{auth:{persistSession:true,autoRefreshToken:true}});const {data,error}=await client.auth.getUser();if(error&&error.name!=='AuthSessionMissingError')throw error;user=data.user||null;msg(user?'Connected and signed in.':'Connected. Sign in to sync.','connection');toggleAuth();await loadHistory();client.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;toggleAuth();setTimeout(()=>checkAdmin().then(marketRefresh).catch(()=>{}),100);setTimeout(()=>loadHistory().catch(e=>msg(e.message,'connection')),0)})}catch(e){client=null;user=null;msg('Connection failed: '+e.message,'connection');toggleAuth();history=readLocal();renderHistory()}}
-function toggleAuth(){$('identity').textContent=user?user.email:'Local / guest';for(const id of ['email','password','login','signup'])$(id).classList.toggle('hidden',!!user);$('logout').classList.toggle('hidden',!user)}async function loadHistory(){if(!user){history=readLocal();renderHistory();return}const {data,error}=await client.from('predictions').select('*').order('created_at',{ascending:false}).limit(500);if(error)throw error;history=data||[];renderHistory()}
+function toggleAuth(){if(!user){adminMode=false;document.body.classList.remove('role-admin');document.body.classList.add('role-customer');$('adminPanel').classList.add('hidden')}$('identity').textContent=user?user.email:'Local / guest';for(const id of ['email','password','login','signup'])$(id).classList.toggle('hidden',!!user);$('logout').classList.toggle('hidden',!user)}async function loadHistory(){if(!user){history=readLocal();renderHistory();return}const {data,error}=await client.from('predictions').select('*').order('created_at',{ascending:false}).limit(500);if(error)throw error;history=data||[];renderHistory()}
 const fixtureMsg=s=>msg(s,'fixtureStatus');
 function dateISO(d){return d.toISOString().slice(0,10)}
 async function footballApi(code){if(!client||!user)throw Error('Connect Supabase and sign in first.');const {data:{session},error:authError}=await client.auth.getSession();if(authError||!session)throw Error('Sign in again.');const config=getConfig();const res=await fetch(config.url+'/functions/v1/football-fixtures?competition='+encodeURIComponent(code),{headers:{'Authorization':'Bearer '+session.access_token,'apikey':config.key}});const json=await res.json().catch(()=>({}));if(!res.ok)throw Error(json.error||'Football API returned '+res.status);return json}
@@ -826,7 +860,23 @@ let marketCache=[];
 async function marketRefresh(){if(!client)return mtext('marketStatus','Connect Supabase to browse.');const {data,error}=await client.rpc('browse_tips');if(error)return mtext('marketStatus',error.message);marketCache=data||[];renderMarket();}
 function renderMarket(){const body=$('marketRows');body.replaceChildren();const term=$('marketSearch').value.trim().toLowerCase(),filter=$('marketFilter').value;const matches=marketCache.filter(t=>(t.league_name+' '+t.home_team+' '+t.away_team).toLowerCase().includes(term)&&(filter==='all'||(filter==='unlocked'?t.unlocked:t.access_mode===filter)));for(const t of matches){const tr=document.createElement('tr');for(const x of [t.league_name+' · '+t.home_team+' vs '+t.away_team,t.kickoff?new Date(t.kickoff).toLocaleString():'—',t.unlocked?'Unlocked':t.access_mode,t.unlocked?((t.draw_probability==null?'—':(t.draw_probability*100).toFixed(1)+'%')+' · '+(t.predicted_score||'')+' · '+(t.analysis||'')):'🔒 Premium analysis protected']){const td=document.createElement('td');td.textContent=x;tr.append(td)}const td=document.createElement('td');if(!t.unlocked&&t.access_mode==='paid')td.append(makeBtn('Buy match · UGX '+Number(t.price_ugx).toLocaleString(),()=>startPesaJetCheckout(t.id,null)));tr.append(td);body.append(tr)}if(!matches.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='No matching published predictions.';tr.append(td);body.append(tr)}mtext('marketStatus',matches.length+' of '+marketCache.length+' published predictions shown.');}
 $('marketSearch').addEventListener('input',renderMarket);$('marketFilter').addEventListener('change',renderMarket);
-async function checkAdmin(){adminMode=false;$('adminPanel').classList.add('hidden');if(!client||!user)return;const {data,error}=await client.rpc('is_super_admin');if(!error&&data){adminMode=true;$('adminPanel').classList.remove('hidden');await adminRefresh()}}
+/** Refresh the server-verified role. Never infer admin from email or localStorage. */
+async function checkAdmin(){
+  adminMode=false;
+  document.body.classList.remove('role-admin');
+  document.body.classList.add('role-customer');
+  $('adminPanel').classList.add('hidden');
+  if(!client||!user)return;
+  const {data,error}=await client.rpc('is_super_admin');
+  if(error){console.warn('Role verification failed:',error.message);return;}
+  if(data===true){
+    adminMode=true;
+    document.body.classList.remove('role-customer');
+    document.body.classList.add('role-admin');
+    $('adminPanel').classList.remove('hidden');
+    await adminRefresh();
+  }
+}
 async function adminRefresh(){if(!adminMode)return;const [ls,ts,os]=await Promise.all([client.from('leagues').select('*').order('name'),client.from('tips').select('*').order('created_at',{ascending:false}).limit(100),client.from('orders').select('*').order('created_at',{ascending:false}).limit(100)]);for(const r of [ls,ts,os])if(r.error)return mtext('adminStatus',r.error.message);const sel=$('admLeagueSelect');sel.replaceChildren();const lg=$('adminLeagues');lg.replaceChildren();for(const l of ls.data){const opt=document.createElement('option');opt.value=l.id;opt.textContent=l.name;sel.append(opt);const div=document.createElement('div');div.style.margin='9px 0';div.append(document.createTextNode(l.name+' ('+l.country+') · '+l.access_mode+' · UGX '+l.price_ugx+' '));div.append(makeBtn('Change access / price',async()=>{const mode=prompt('Access: free, paid, hidden',l.access_mode);if(!['free','paid','hidden'].includes(mode))return;const price=Number(prompt('Price UGX',l.price_ugx));if(!Number.isInteger(price)||price<0)return;const {error}=await client.from('leagues').update({access_mode:mode,price_ugx:price}).eq('id',l.id);if(error)alert(error.message);await adminRefresh();await marketRefresh()}));lg.append(div)}const tips=$('adminTips');tips.replaceChildren();for(const t of ts.data){const div=document.createElement('div');div.style.margin='8px 0';div.append(document.createTextNode(t.home_team+' vs '+t.away_team+' · '+t.access_mode+' · '+(t.published?'Published':'Unpublished')+' '));div.append(makeBtn('Edit',async()=>{const mode=prompt('Access: inherit, free, paid, hidden',t.access_mode);if(!['inherit','free','paid','hidden'].includes(mode))return;const price=Number(prompt('Price UGX',t.price_ugx));const published=confirm('Publish this match? Cancel to unpublish.');if(!Number.isInteger(price)||price<0)return;const {error}=await client.from('tips').update({access_mode:mode,price_ugx:price,published}).eq('id',t.id);if(error)alert(error.message);await adminRefresh();await marketRefresh()}));div.append(makeBtn('Delete',async()=>{if(!confirm('Delete match permanently?'))return;const {error}=await client.from('tips').delete().eq('id',t.id);if(error)alert(error.message);await adminRefresh();await marketRefresh()}));tips.append(div)}const orders=$('adminOrders');orders.replaceChildren();for(const o of os.data){const div=document.createElement('div');div.style.margin='8px 0';div.append(document.createTextNode(o.id+' · '+o.status+' · UGX '+o.amount_ugx+' · webhook-verified only '));if(false&&o.status==='pending')for(const status of ['paid','rejected'])div.append(makeBtn(status==='paid'?'Approve verified payment':'Reject',async()=>{if(status==='paid'&&!confirm('Have you independently verified payment?'))return;const ref=status==='paid'?prompt('Verified transaction reference (required)'):null;if(status==='paid'&&!ref?.trim())return;const {error}=await client.from('orders').update({status,payment_reference:ref}).eq('id',o.id).eq('status','pending');if(error)alert(error.message);await adminRefresh()}));orders.append(div)}$('businessMetrics').textContent=ls.data.length+' leagues · '+ts.data.length+' predictions · '+os.data.filter(o=>o.status==='paid').length+' paid orders · UGX '+os.data.filter(o=>o.status==='paid').reduce((v,o)=>v+Number(o.amount_ugx||0),0).toLocaleString()+' recorded gross sales (latest 100 orders)';mtext('adminStatus','Admin data loaded. '+ls.data.length+' leagues, '+ts.data.length+' tips, '+os.data.length+' orders.')}
 
 // PesaJet checkout: payment amount and buyer identity are determined by server-side RPC.
