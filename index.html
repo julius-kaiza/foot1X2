@@ -17,7 +17,7 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width,initial-scale=1" name="viewport"/>
   <title>
-   DrawLab | Football Draw Intelligence
+   Foot1X2 | Football Prediction Intelligence
   </title>
   <style>
    :root{font-family:Inter,system-ui,Arial,sans-serif;color:#e8eef8;background:#0b1220}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1220,#101f32);min-height:100vh}header{border-bottom:1px solid #26374a;background:#101b2b;padding:18px max(20px,calc((100vw - 1200px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.brand{font-weight:800;font-size:23px}.brand span{color:#42d5ac}.shell{max-width:1200px;margin:30px auto;padding:0 18px}.intro{margin-bottom:24px}.intro h1{margin:0 0 8px;font-size:clamp(26px,4vw,40px)}.muted{color:#9bb0c8}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:20px}.panel{background:#142338;border:1px solid #2b4159;border-radius:16px;padding:23px;margin-bottom:20px;box-shadow:0 12px 30px #0002}h2{font-size:20px;margin:0 0 16px}h3{font-size:16px;margin:16px 0 10px}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{display:flex;flex-direction:column;gap:6px}.field.wide{grid-column:1/-1}label{font-size:13px;color:#b7c8dd}input,select{width:100%;background:#0d1929;color:#fff;border:1px solid #38506a;border-radius:9px;padding:11px;font:inherit;min-width:0}input:focus{outline:2px solid #30bfa0;outline-offset:1px}button{background:#29c49c;color:#06231b;border:0;padding:11px 16px;border-radius:9px;font:inherit;font-weight:750;cursor:pointer}button.secondary{background:#273b51;color:#e8eef8}button.danger{background:#703849;color:#fff}button:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.pill{font-size:12px;background:#1b4550;color:#74ead0;border-radius:100px;padding:5px 10px}.metric{font-size:46px;font-weight:850;color:#59e6bd;margin:10px 0}.probrow{display:grid;grid-template-columns:85px 1fr 58px;gap:8px;align-items:center;margin:14px 0;font-size:13px}.track{height:12px;background:#25394d;border-radius:20px;overflow:hidden}.fill{height:100%;background:#5d8ef0}.fill.draw{background:#36d3a6}.fill.away{background:#e2a86a}.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.score{background:#0c1a2a;padding:13px;text-align:center;border-radius:10px}.score strong{display:block;font-size:20px}.score small{color:#9bb0c8}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;border-bottom:1px solid #2c4258;padding:11px 8px}th{color:#a6bad2}table button{padding:7px 9px;font-size:12px}.scroll{overflow-x:auto}.notice{border-left:3px solid #36d3a6;padding:10px 13px;background:#0c2430;color:#c3e3e2;font-size:13px;margin-top:15px}.status{min-height:22px;font-size:13px;color:#b6d0e5}.hidden{display:none!important}.auth{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.auth input{width:160px}.auth button{padding:10px}.full{grid-column:1/-1}footer{padding:20px 0 40px;color:#879eb6;font-size:12px}@media(max-width:850px){.grid{grid-template-columns:1fr}.auth input{width:140px}}@media(max-width:520px){.fields{grid-template-columns:1fr}.scores{grid-template-columns:repeat(3,minmax(0,1fr))}.panel{padding:16px}}
@@ -88,13 +88,16 @@ tr:hover td { background: rgba(255,255,255,.025); }
   button,.workspace-nav a,input { transition: none; }
 }
   </style>
- </head>
+ <style id="foot1x2-design">
+#foot1x2Lab{margin:26px 0;border:1px solid #2e655a;background:linear-gradient(135deg,#102b32,#132338);padding:26px}.fx-top{display:flex;justify-content:space-between;gap:20px;align-items:start}.fx-pill{border:1px solid #327967;border-radius:999px;padding:9px 12px;font-size:12px;color:#91ecd3;white-space:nowrap}.fx-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.fx-fields label{display:flex;flex-direction:column;gap:8px;font-size:12px;color:#c3d6e5}.fx-fields input{width:100%;box-sizing:border-box;background:#0b1928;border:1px solid #385568;color:#fff;padding:11px;border-radius:9px}.fx-actions{display:flex;gap:9px;flex-wrap:wrap}.fx-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0}.fx-kpis>div{background:#0c1d2d;border:1px solid #2a4b5d;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:9px}.fx-kpis small{font-size:12px;color:#aac5d6}.fx-kpis strong{font-size:27px;color:#fff;font-variant-numeric:tabular-nums}.fx-kpis .fx-feature{border-color:#39c6a2;background:#123b3b}.fx-kpis .fx-feature strong{color:#7ef1d1}.fx-secondary{grid-template-columns:repeat(5,minmax(0,1fr))}.fx-secondary strong{font-size:20px}.fx-bars{display:grid;gap:9px}.fx-bar{display:grid;grid-template-columns:110px 1fr 65px;gap:10px;align-items:center;font-size:12px}.fx-bar>div{height:11px;border-radius:99px;background:#0b1826;overflow:hidden}.fx-bar i{display:block;height:100%;background:#4d94d5;border-radius:99px}.fx-bar.draw i{background:#35d6a5}.fx-bar.away i{background:#f2b85d}.fx-columns{display:grid;grid-template-columns:1.25fr 1fr;gap:25px;margin-top:22px}.fx-tablewrap{overflow:auto}.fx-matrix{width:100%;border-collapse:collapse;text-align:center;font-size:12px}.fx-matrix th,.fx-matrix td{padding:10px 6px;border:1px solid #29495c}.fx-matrix th{background:#1d3448;color:#c6e5ef}.fx-matrix td{background:#0e2233;font-variant-numeric:tabular-nums}.fx-matrix td.fx-diagonal{background:#145445;color:#d2fff0;font-weight:800}.fx-explanation{line-height:1.7;font-size:13px;background:#0d2030;border:1px solid #2d4c5e;padding:14px;border-radius:12px;color:#d4e5ee}.fx-explanation p{margin:0 0 9px}.fx-explanation p:last-child{margin:0}@media(max-width:850px){.fx-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.fx-columns{grid-template-columns:1fr}.fx-kpis,.fx-secondary{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){#foot1x2Lab{padding:14px}.fx-top{display:block}.fx-fields{grid-template-columns:1fr}.fx-kpis strong{font-size:22px}.fx-bar{grid-template-columns:70px 1fr 55px}}
+</style>
+</head>
  <body>
   <header>
    <div class="brand">
-    ⚽ Draw
+    ⚽ Foot
     <span>
-     Lab
+     1X2
     </span>
    </div>
    <div class="auth">
@@ -121,7 +124,7 @@ tr:hover td { background: rgba(255,255,255,.025); }
    <a href="#predictionWorkspace">
     Prediction model
    </a>
-   <a href="#fixtureWorkspace">
+   <a href="#foot1x2Lab">Draw laboratory</a><a href="#fixtureWorkspace">
     Fixtures
    </a>
    <a href="#historyWorkspace">
@@ -140,13 +143,13 @@ tr:hover td { background: rgba(255,255,255,.025); }
   <main class="shell" id="workspace">
    <section class="intro">
     <span class="eyebrow">
-     DRAWLAB • FOOTBALL ANALYTICS
+     FOOT1X2 • FOOTBALL INTELLIGENCE
     </span>
     <h1>
-     Football intelligence, professionally delivered.
+     Football predictions, built on statistical evidence.
     </h1>
     <p class="muted">
-     Explore football fixtures, model match outcomes, and access published predictions. Premium insights are available only after verified access.
+     Compare 1/X/2 probabilities, investigate likely draws, explore correct scores and publish premium predictions backed by transparent models.
     </p>
    </section>
    <div class="grid">
@@ -733,9 +736,20 @@ tr:hover td { background: rgba(255,255,255,.025); }
     </p>
    </section>
    <footer>
-    © DrawLab · Statistical football analysis · Probabilities are estimates, never guarantees. Verify payment and provider integrations before production use.
+    © Foot1X2 · Statistical football analysis · Probabilities are estimates, never guarantees. Verify payment and provider integrations before production use.
    </footer>
-   <section class="panel" id="setupBundle">
+   
+<section class="panel full" id="foot1x2Lab" aria-labelledby="foot1x2Title">
+  <div class="fx-top"><div><span class="eyebrow">FOOT1X2 • RESEARCH WORKSPACE</span><h2 id="foot1x2Title">Advanced Draw & 1X2 Laboratory</h2><p class="muted">Independent mathematical estimates. Adjust expected goals, compare models and inspect exact score probabilities. This tool uses supplied inputs, not live team statistics.</p></div><span class="fx-pill">Probability-based · No guarantees</span></div>
+  <div class="fx-fields"><label>Home team<input id="fxHome" value="Home team" maxlength="70"></label><label>Away team<input id="fxAway" value="Away team" maxlength="70"></label><label>Expected home goals (λ)<input id="fxLambdaH" type="number" min="0.05" max="6" step="0.05" value="1.25"></label><label>Expected away goals (λ)<input id="fxLambdaA" type="number" min="0.05" max="6" step="0.05" value="1.10"></label><label>Low-score correlation (ρ)<input id="fxRho" type="number" min="-0.3" max="0.3" step="0.01" value="-0.08"></label><label>Draw threshold (%)<input id="fxThreshold" type="number" min="10" max="70" step="1" value="30"></label></div>
+  <div class="fx-actions"><button id="fxAnalyze">Analyze match</button><button id="fxFromCalculator" class="secondary">Use main calculator's current inputs</button><button id="fxExport" class="secondary">Export report CSV</button></div>
+  <p id="fxStatus" class="status" role="status">Enter match assumptions and select Analyze match.</p>
+  <div class="fx-kpis"><div><small>Home win · 1</small><strong id="fxP1">—</strong></div><div class="fx-feature"><small>Draw · X</small><strong id="fxPX">—</strong></div><div><small>Away win · 2</small><strong id="fxP2">—</strong></div><div><small>Most likely score</small><strong id="fxScore">—</strong></div></div>
+  <div class="fx-bars" id="fxBars" aria-label="Outcome probabilities"></div>
+  <div class="fx-kpis fx-secondary"><div><small>Under 2.5 goals</small><strong id="fxUnder">—</strong></div><div><small>Both teams score</small><strong id="fxBTTS">—</strong></div><div><small>0–0</small><strong id="fx00">—</strong></div><div><small>1–1</small><strong id="fx11">—</strong></div><div><small>2–2</small><strong id="fx22">—</strong></div></div>
+  <div class="fx-columns"><div><h3>Exact score probability matrix</h3><p class="muted">Home goals on rows; away goals on columns. Probabilities are calculated from the normalized score distribution.</p><div class="fx-tablewrap"><table class="fx-matrix" id="fxMatrix"><tbody></tbody></table></div></div><div><h3>Draw intelligence</h3><div id="fxExplanation" class="fx-explanation">Calculate a match to inspect its draw profile.</div><h3>Model comparison</h3><div id="fxCompare" class="fx-explanation">Standard Poisson and Dixon–Coles adjustments will appear here.</div><p class="muted">The threshold is a user-selected screening rule, not a validated accuracy or confidence measure. No model can guarantee a draw.</p></div></div>
+</section>
+<section class="panel" id="setupBundle">
     <h2>
      Deployment &amp; Database Setup
     </h2>
@@ -1093,5 +1107,25 @@ function drawlabSource(id){return document.getElementById('bundle-'+id).textCont
 function drawlabDownload(id,name){const blob=new Blob([drawlabSource(id)],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 async function drawlabCopy(id){try{await navigator.clipboard.writeText(drawlabSource(id));document.getElementById('setupFeedback').textContent='SQL copied to clipboard.';}catch(e){document.getElementById('setupFeedback').textContent='Clipboard blocked; use Download schema.sql instead.';}}
 </script>
- </body>
+ <script id="foot1x2-engine">
+/* FOOT1X2 ADVANCED DRAW LAB — independent, explainable score-probability model.
+   Uses no private keys or external requests. Existing marketplace/auth/payment
+   JavaScript is deliberately unchanged. */
+(()=>{'use strict';
+const $=id=>document.getElementById(id),pct=x=>(100*x).toFixed(1)+'%',clamp=(x,a,b)=>Math.max(a,Math.min(b,x));let latest=null;
+function poisson(k,lambda){let p=Math.exp(-lambda);for(let i=1;i<=k;i++)p*=lambda/i;return p}
+function correction(i,j,h,a,r){if(i===0&&j===0)return 1-h*a*r;if(i===0&&j===1)return 1+h*r;if(i===1&&j===0)return 1+a*r;if(i===1&&j===1)return 1-r;return 1}
+function model(h,a,r){const grid=[],max=18;let sum=0;for(let i=0;i<=max;i++){grid[i]=[];for(let j=0;j<=max;j++){const p=poisson(i,h)*poisson(j,a)*correction(i,j,h,a,r);if(p<0)throw Error('Invalid correlation for these expected goals; reduce |ρ|.');grid[i][j]=p;sum+=p}}let home=0,away=0,draw=0,under=0,btts=0;const scores=[];for(let i=0;i<=max;i++)for(let j=0;j<=max;j++){const p=grid[i][j]/sum;grid[i][j]=p;if(i>j)home+=p;else if(i<j)away+=p;else draw+=p;if(i+j<3)under+=p;if(i>0&&j>0)btts+=p;scores.push({i,j,p})}scores.sort((x,y)=>y.p-x.p);return{grid,home,away,draw,under,btts,scores}}
+function read(id){const n=Number($(id).value);if(!Number.isFinite(n)||$(id).value.trim()==='')throw Error('Enter a valid number for '+id);const el=$(id);if(n<Number(el.min)||n>Number(el.max))throw Error(id+' must be between '+el.min+' and '+el.max);return n}
+function render(){const h=read('fxLambdaH'),a=read('fxLambdaA'),r=read('fxRho'),threshold=read('fxThreshold')/100;const home=$('fxHome').value.trim()||'Home team',away=$('fxAway').value.trim()||'Away team';const m=model(h,a,r),plain=model(h,a,0);latest={homeName:home,awayName:away,h,a,r,threshold,...m};for(const [id,val] of [['fxP1',m.home],['fxPX',m.draw],['fxP2',m.away],['fxUnder',m.under],['fxBTTS',m.btts],['fx00',m.grid[0][0]],['fx11',m.grid[1][1]],['fx22',m.grid[2][2]]])$(id).textContent=pct(val);$('fxScore').textContent=m.scores[0].i+'–'+m.scores[0].j;
+$('fxBars').replaceChildren();for(const [name,value,cls] of [['Home · 1',m.home,'home'],['Draw · X',m.draw,'draw'],['Away · 2',m.away,'away']]){const line=document.createElement('div');line.className='fx-bar '+cls;const label=document.createElement('span');label.textContent=name;const track=document.createElement('div');const fill=document.createElement('i');fill.style.width=pct(value);track.append(fill);const v=document.createElement('strong');v.textContent=pct(value);line.append(label,track,v);$('fxBars').append(line)}
+const table=$('fxMatrix');table.replaceChildren();const head=document.createElement('tr');for(const name of ['H / A',0,1,2,3,4,5]){const th=document.createElement('th');th.textContent=name;head.append(th)}table.append(head);for(let i=0;i<=5;i++){const tr=document.createElement('tr');const th=document.createElement('th');th.textContent=i;tr.append(th);for(let j=0;j<=5;j++){const td=document.createElement('td');td.textContent=pct(m.grid[i][j]);if(i===j)td.className='fx-diagonal';tr.append(td)}table.append(tr)}
+const diff=Math.abs(h-a),pick=m.home>=m.draw&&m.home>=m.away?'1':m.draw>=m.away?'X':'2';const label=m.draw>=threshold?'Meets selected draw screening threshold':'Below selected draw screening threshold';const topDraw=[0,1,2,3,4].map(k=>({k,p:m.grid[k][k]})).sort((x,y)=>y.p-x.p).slice(0,3);$('fxExplanation').replaceChildren();for(const t of [home+' vs '+away+' · Model 1/X/2 selection: '+pick+'.',label+' ('+pct(m.draw)+' vs '+pct(threshold)+').','Expected goal difference: '+diff.toFixed(2)+'. '+(diff<.35?'The teams have relatively similar expected scoring rates.':'The scoring rates are less evenly matched.') ,'Leading draw scorelines: '+topDraw.map(s=>s.k+'–'+s.k+' ('+pct(s.p)+')').join(', ')+'.','These are scenario estimates based on supplied λ values; no injury, lineup, market or current-form data is automatically incorporated.']){const p=document.createElement('p');p.textContent=t;$('fxExplanation').append(p)}$('fxCompare').textContent='Independent Poisson draw: '+pct(plain.draw)+' · Dixon–Coles adjusted draw: '+pct(m.draw)+' · Adjustment: '+(100*(m.draw-plain.draw)).toFixed(2)+' percentage points. Negative ρ typically increases low-scoring draws.';$('fxStatus').textContent='Analysis complete. Model probabilities total '+pct(m.home+m.draw+m.away)+'. Predictions are not certainties.'}
+$('fxAnalyze').addEventListener('click',()=>{try{render()}catch(e){$('fxStatus').textContent=e.message}});
+$('fxFromCalculator').addEventListener('click',()=>{try{const get=id=>$(id).value.trim(),num=id=>Number(get(id));if(!get('home')||!get('away'))throw Error('Enter teams in the main calculator first.');const lh=num('leagueHome'),la=num('leagueAway');if(lh<=0||la<=0)throw Error('League goal averages must be positive.');let h=num('homeScored')*num('awayConceded')/la,a=num('awayScored')*num('homeConceded')/lh;const w=num('xgWeight')/100;if(get('homeXg'))h=(1-w)*h+w*num('homeXg');if(get('awayXg'))a=(1-w)*a+w*num('awayXg');$('fxHome').value=get('home');$('fxAway').value=get('away');$('fxLambdaH').value=clamp(h,.05,6).toFixed(3);$('fxLambdaA').value=clamp(a,.05,6).toFixed(3);$('fxRho').value=get('rho')||'-.08';render();$('foot1x2Lab').scrollIntoView({behavior:'smooth'})}catch(e){$('fxStatus').textContent=e.message}});
+$('fxExport').addEventListener('click',()=>{if(!latest){$('fxStatus').textContent='Analyze a match before exporting.';return}const p=latest,rows=[['Foot1X2 probability report'],['Home team',p.homeName],['Away team',p.awayName],['Expected home goals',p.h],['Expected away goals',p.a],['Correlation',p.r],['Home win probability',p.home],['Draw probability',p.draw],['Away win probability',p.away],['Under 2.5 probability',p.under],['BTTS probability',p.btts],['Score','Probability'],...p.scores.slice(0,15).map(x=>[x.i+'-'+x.j,x.p])];
+const csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='foot1x2-analysis.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)});
+})();
+</script>
+</body>
 </html>
