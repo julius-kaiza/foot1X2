@@ -163,7 +163,7 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <a href="#universalMarkets">All predictions</a><a href="#customerSubscriptions">League access</a><a href="#marketplaceWorkspace">
     Premium tips
    </a>
-<a class="admin-only" href="#ticketBuilder">🎟 Create tickets</a><a href="#merchantSettlementPanel" id="adminAccountNav">💰 Admin Account</a><a class="admin-only" href="#adminPanel">
+<a class="admin-only" href="#ticketBuilder">🎟 Create tickets</a><a class="admin-only" href="#merchantSettlementPanel" id="adminAccountNav">💰 Admin Account</a><a class="admin-only" href="#adminPanel">
     Super Admin
    </a>
 
@@ -180,9 +180,9 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
      Compare 1/X/2 probabilities, investigate likely draws, explore correct scores and publish premium predictions backed by transparent models.
     </p>
 </section>
-<section class="panel" id="merchantSettlementPanel" style="margin:0 0 24px;border:2px solid #39c6a2;scroll-margin-top:85px">
+<section class="panel admin-only" id="merchantSettlementPanel" style="margin:0 0 24px;border:2px solid #39c6a2;scroll-margin-top:85px">
 <h2>💰 Admin Account — Mobile Money receiving number</h2>
-<p class="muted">Visible to help you locate the setting. Only a verified Super Admin can save changes. Enter the number where you want Foot1X2 payments settled. This saves your receiving account securely. Actual transfers depend on PesaJet enabling that number as your merchant settlement destination.</p>
+<p class="muted">Only a verified Super Admin can view or change this receiving account. Enter the number where you want Foot1X2 payments settled. This saves your receiving account securely. Actual transfers depend on PesaJet enabling that number as your merchant settlement destination.</p>
 <div class="fields"><div class="field"><label for="merchantNetwork">My receiving network</label><select id="merchantNetwork"><option value="mtn">MTN Mobile Money</option><option value="airtel">Airtel Money</option></select></div>
 <div class="field"><label for="merchantPhone">My receiving phone number</label><input id="merchantPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+256771234567" aria-describedby="merchantPhoneHelp"/></div></div>
 <p class="muted" id="merchantPhoneHelp">This is YOUR receiving number, not the customer's payment number.</p>
