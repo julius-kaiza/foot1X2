@@ -160,7 +160,7 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <a class="admin-only" href="#historyWorkspace">
     History
    </a>
-<a href="#universalMarkets">All predictions</a><a href="#marketplaceWorkspace">
+<a href="#universalMarkets">All predictions</a><a href="#customerSubscriptions">League access</a><a href="#marketplaceWorkspace">
     Premium tips
    </a>
 <a class="admin-only" href="#adminPanel">
@@ -510,6 +510,7 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 </div>
 </section>
 </div>
+<section class="panel" id="customerSubscriptions" aria-labelledby="subscriptionTitle"><h2 id="subscriptionTitle">Subscribe to league predictions</h2><p class="muted">Choose a paid league to unlock its eligible published predictions. Access is activated only after verified mobile money payment. Current backend purchases provide league access without a monthly expiry; recurring subscriptions require an additional server-side billing upgrade.</p><div class="actions"><button id="loadLeagueSubscriptions" class="secondary" type="button">View league access options</button><button id="viewMyLeagueAccess" class="secondary" type="button">My league access</button></div><p class="status" id="leagueSubscriptionStatus" role="status"></p><div id="leagueSubscriptionRows" class="grid" style="display:block"></div></section>
 <section class="full panel" id="marketplaceWorkspace">
 <h2>
      Draw marketplace · Free and premium
@@ -687,6 +688,7 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <h3>
 <div class="notice" id="savedMatchPublishNotice">Saved predictions can be selected below. Saving a prediction does not publish it to customers.</div>
 <div class="field" style="margin:14px 0"><label for="admSavedMatch">Saved match — select to fill the publishing form</label><select id="admSavedMatch"><option value="">Choose a saved match…</option></select><button class="secondary" id="admReloadSaved" style="margin-top:8px" type="button">Refresh saved matches</button></div>
+<div class="panel" id="manualMatchEntry" style="margin:16px 0;border:1px solid #398977"><h3>Add any match — including outside fetched fixtures</h3><p class="muted">You can manually create a competition and publish a match from any source. This form does not require a football API fixture ID. Review any independently supplied probabilities before publication.</p><div class="fields"><div class="field"><label for="manualLeagueName">New competition / league name</label><input id="manualLeagueName" placeholder="e.g. Regional Friendly Tournament"></div><div class="field"><label for="manualLeagueCountry">Country or region</label><input id="manualLeagueCountry" placeholder="e.g. Uganda"></div><div class="field"><label for="manualLeagueAccess">League access</label><select id="manualLeagueAccess"><option value="paid">Paid</option><option value="free">Free</option><option value="hidden">Hidden</option></select></div><div class="field"><label for="manualLeaguePrice">League access price (UGX)</label><input id="manualLeaguePrice" type="number" min="0" step="1" value="5000"></div></div><div class="actions"><button id="manualCreateLeague" type="button">Create league and select for match</button></div><p class="status" id="manualMatchStatus" role="status"></p><p class="muted">After creating/selecting a league, enter the teams, kickoff, analysis and access settings in the Publish a match form below.</p></div>
      Publish a match
     </h3>
 <div class="fields">
@@ -980,7 +982,7 @@ async function checkAdmin(){
   $('adminPanel').classList.add('hidden');
   if(!client||!user)return;
   const {data,error}=await client.rpc('is_super_admin');
-  if(error){console.warn('Role verification failed:',error.message);authNotice('Super Admin verification failed: '+error.message);return;}
+  if(error){console.warn('Role verification failed:',error.message);return;}
   if(data===true){
     adminMode=true;
     document.body.classList.remove('role-customer');
@@ -988,7 +990,7 @@ async function checkAdmin(){
     $('adminPanel').classList.remove('hidden');
     authNotice('');
     await adminRefresh();
-  }else{authNotice('Signed in, but this account is not recognized as Super Admin. Ask the database owner to check the admins table and is_super_admin() RPC.');}
+  }else{ /* Regular customer: no administrator-role warning is displayed. */ }
 }
 
 // Administrator changes are verified by Supabase RLS; browser visibility alone grants nothing.
@@ -1086,6 +1088,52 @@ const edit=adminAction('✎ Edit league',()=>{div.querySelector('.admin-edit-for
 const del=adminAction('🗑 Delete league',()=>adminRemove('leagues',l.id,l.name+' (record '+l.id+')'));del.className='danger';del.type='button';controls.append(del);
 if(Object.hasOwn(l,'enabled')){const toggle=adminAction(l.enabled?'Disable':'Enable',()=>adminPatch('leagues',l.id,{enabled:!l.enabled}));toggle.type='button';controls.append(toggle)}
 div.append(controls);lg.append(div)}if([...sel.options].some(o=>o.value===priorLeague))sel.value=priorLeague;await reloadSavedForPublishing();const tips=$('adminTips');tips.replaceChildren();for(const t of ts.data){const div=document.createElement('div');div.style.margin='8px 0';div.append(document.createTextNode(t.home_team+' vs '+t.away_team+' · '+t.access_mode+' · '+(t.published?'Published':'Unpublished')+' '));div.append(makeBtn('Edit',async()=>{const mode=prompt('Access: inherit, free, paid, hidden',t.access_mode);if(!['inherit','free','paid','hidden'].includes(mode))return;const price=Number(prompt('Price UGX',t.price_ugx));const published=confirm('Publish this match? Cancel to unpublish.');if(!Number.isInteger(price)||price<0)return;const {error}=await client.from('tips').update({access_mode:mode,price_ugx:price,published}).eq('id',t.id);if(error)alert(error.message);await adminRefresh();await marketRefresh()}));div.append(makeBtn('Delete',async()=>{if(!confirm('Delete match permanently?'))return;const {error}=await client.from('tips').delete().eq('id',t.id);if(error)alert(error.message);await adminRefresh();await marketRefresh()}));tips.append(div)}const orders=$('adminOrders');orders.replaceChildren();for(const o of os.data){const div=document.createElement('div');div.style.margin='8px 0';div.append(document.createTextNode(o.id+' · '+o.status+' · UGX '+o.amount_ugx+' · webhook-verified only '));if(false&&o.status==='pending')for(const status of ['paid','rejected'])div.append(makeBtn(status==='paid'?'Approve verified payment':'Reject',async()=>{if(status==='paid'&&!confirm('Have you independently verified payment?'))return;const ref=status==='paid'?prompt('Verified transaction reference (required)'):null;if(status==='paid'&&!ref?.trim())return;const {error}=await client.from('orders').update({status,payment_reference:ref}).eq('id',o.id).eq('status','pending');if(error)alert(error.message);await adminRefresh()}));orders.append(div)}$('businessMetrics').textContent=ls.data.length+' leagues · '+ts.data.length+' predictions · '+os.data.filter(o=>o.status==='paid').length+' paid orders · UGX '+os.data.filter(o=>o.status==='paid').reduce((v,o)=>v+Number(o.amount_ugx||0),0).toLocaleString()+' recorded gross sales (latest 100 orders)';adminExtendedLists([],ts.data);if($('adminRoleDiagnostic'))$('adminRoleDiagnostic').textContent='Super Admin verified · Each league has its own Edit and Delete controls. Scroll to Manage leagues or Manage published matches.';mtext('adminStatus','Admin data loaded. '+ls.data.length+' leagues, '+ts.data.length+' tips, '+os.data.length+' orders.')}
+
+
+// Customer league-access purchasing uses the existing server-side order and PesaJet verification.
+// Do not equate these orders with recurring/time-limited subscriptions.
+async function loadLeagueSubscriptionOptions(){
+ const root=$('leagueSubscriptionRows'),status=$('leagueSubscriptionStatus');
+ root.replaceChildren();status.textContent='Loading available leagues…';
+ if(!client){status.textContent='Supabase is not connected.';return;}
+ const {data,error}=await client.from('leagues').select('id,name,country,access_mode,price_ugx').eq('access_mode','paid').eq('enabled',true).order('name');
+ if(error){status.textContent='Unable to load leagues: '+error.message;return;}
+ const leagues=data||[];status.textContent=leagues.length+' paid league access option(s).';
+ if(!leagues.length){root.textContent='No paid leagues available yet.';return;}
+ for(const l of leagues){
+  const card=document.createElement('div');card.style.cssText='margin:10px 0;padding:15px;border:1px solid #36566a;border-radius:12px;background:#102538';
+  const name=document.createElement('strong');name.textContent=l.name+' · '+(l.country||'International');
+  const price=document.createElement('p');price.textContent='League access · UGX '+Number(l.price_ugx||0).toLocaleString();
+  const btn=makeBtn('Get league access',()=>startPesaJetCheckout(null,l.id));btn.disabled=!user;
+  card.append(name,price,btn);root.append(card);
+ }
+ if(!user)status.textContent+=' Sign in to purchase.';
+}
+$('loadLeagueSubscriptions').onclick=loadLeagueSubscriptionOptions;
+$('viewMyLeagueAccess').onclick=async()=>{
+ if(!client||!user){$('leagueSubscriptionStatus').textContent='Sign in to view purchased access.';return;}
+ const {data,error}=await client.from('orders').select('league_id,status,amount_ugx,created_at').not('league_id','is',null).eq('status','paid');
+ if(error){$('leagueSubscriptionStatus').textContent=error.message;return;}
+ const ids=[...new Set((data||[]).map(x=>x.league_id))];
+ if(!ids.length){$('leagueSubscriptionStatus').textContent='No verified league access purchases yet.';return;}
+ const {data:leagues,error:le}=await client.from('leagues').select('id,name').in('id',ids);
+ if(le){$('leagueSubscriptionStatus').textContent=le.message;return;}
+ $('leagueSubscriptionStatus').textContent='Your unlocked leagues: '+(leagues||[]).map(x=>x.name).join(', ')+'. Refresh marketplace to view eligible published predictions.';
+};
+$('manualCreateLeague').onclick=async()=>{
+ const status=$('manualMatchStatus');status.textContent='';
+ if(!adminMode||!client){status.textContent='Verified Super Admin access required.';return;}
+ const name=$('manualLeagueName').value.trim(),country=$('manualLeagueCountry').value.trim(),access_mode=$('manualLeagueAccess').value,price_ugx=Number($('manualLeaguePrice').value);
+ if(!name||!Number.isInteger(price_ugx)||price_ugx<0){status.textContent='Enter a league name and a valid nonnegative price.';return;}
+ const btn=$('manualCreateLeague');btn.disabled=true;
+ try{
+  const {data,error}=await client.from('leagues').insert({name,country,access_mode,price_ugx,provider:'manual'}).select('id').single();
+  if(error)throw error;
+  await adminRefresh();$('admLeagueSelect').value=data.id;
+  status.textContent='League created and selected. Complete the Publish a match form below; manual fixtures are supported.';
+  $('admHome').focus();
+ }catch(e){status.textContent='Unable to create league: '+e.message;}finally{btn.disabled=false;}
+};
 
 // PesaJet checkout: payment amount and buyer identity are determined by server-side RPC.
 let checkoutTip=null,checkoutLeague=null,checkoutOrder=null;
