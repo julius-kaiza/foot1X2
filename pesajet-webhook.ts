@@ -764,11 +764,8 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <button id="publishTip">
      Publish match
     </button>
-<h3>
-     Manage published matches
-    </h3>
-<div id="adminTips">
-</div>
+<!-- Legacy match management retained internally, not shown in simplified dashboard. -->
+<div id="adminTips" class="hidden" aria-hidden="true"></div>
 <section class="panel" id="subscriptionPlanBuilder" style="margin:18px 0;border:1px solid #398977">
 <h3>Super Admin · Daily, weekly and monthly subscription plans</h3>
 <p class="muted">Create paid subscription plans with a duration, custom UGX price, and associated premium tickets. Subscription expiry and renewal require the included Supabase SQL migration.</p>
@@ -781,10 +778,11 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <div class="actions"><button type="button" id="planCreate">Create subscription plan</button><button type="button" class="secondary" id="planRefresh">Refresh plans</button></div>
 <p class="status" id="planStatus"></p><div id="adminPlanList"></div>
 </section>
-<section class="panel" id="ticketBuilder" style="margin:18px 0;border:1px solid #398977">
-<h3>Premium Ticket Builder</h3>
-<p class="muted">Create one priced ticket with multiple selections. Customers pay once to unlock every pick on that ticket. Works with manual matches and does not require fixture API IDs.</p>
-<div class="fields"><div class="field"><label for="ticketPlan">Offer ticket in subscription plan (optional)</label><select id="ticketPlan"><option value="">Individual paid ticket (one-time purchase)</option></select></div><div class="field"><label for="ticketTitle">Ticket title</label><input id="ticketTitle" placeholder="e.g. Weekend 4-match accumulator"></div><div class="field"><label for="ticketPrice">Ticket price (UGX)</label><input id="ticketPrice" type="number" min="1" step="1" placeholder="Enter ticket price"></div></div>
+<div class="actions" style="margin:18px 0"><button type="button" id="openTicketBuilder">+ Create ticket of your choice</button></div>
+<section class="panel hidden" id="ticketBuilder" style="margin:18px 0;border:1px solid #398977">
+<h3>Ticket Builder — Free, Single Purchase or Subscription</h3>
+<p class="muted">Build your own multi-match ticket. Publish it free, sell it individually, or include it in a subscription plan. All picks are entered by the Super Admin.</p>
+<div class="fields"><div class="field"><label for="ticketPlan">Ticket access</label><select id="ticketPlan"><option value="__free__">Free ticket — everyone can view</option><option value="">Individual paid ticket — one-time purchase</option></select></div><div class="field"><label for="ticketTitle">Ticket title</label><input id="ticketTitle" placeholder="e.g. Weekend 4-match accumulator"></div><div class="field"><label for="ticketPrice">Ticket price (UGX)</label><input id="ticketPrice" type="number" min="1" step="1" placeholder="Enter ticket price"></div></div>
 <div id="ticketPicks"></div>
 <div class="actions"><button type="button" class="secondary" id="ticketAddPick">+ Add match selection</button><button type="button" class="secondary" id="ticketPreview">Preview ticket</button><button type="button" class="secondary" id="ticketClear">Clear builder</button><button type="button" id="ticketPublish">Publish ticket for sale</button></div><div id="ticketPreviewArea" class="notice hidden" aria-live="polite" style="white-space:pre-line"></div>
 <p class="status" id="ticketStatus" role="status"></p>
@@ -980,11 +978,11 @@ async function refreshDraftQueue(){
    const leagueId=await ensureLeagueForSavedPrediction(p.league||'Unspecified league');
    const {data:existing,error:lookupError}=await client.from('tips').select('id').eq('league_id',leagueId).eq('home_team',p.home_team).eq('away_team',p.away_team).eq('kickoff',p.kickoff).limit(1);
    if(lookupError)throw lookupError;
-   if(existing?.length){status.textContent='This match already has a marketplace record. Edit it under Manage published matches.';return;}
+   if(existing?.length){status.textContent='This match already has a marketplace record.';return;}
    const row={league_id:leagueId,home_team:p.home_team,away_team:p.away_team,kickoff:p.kickoff,draw_probability:p.draw_probability,predicted_score:Math.round(p.expected_home)+'-'+Math.round(p.expected_away),analysis:'Model estimate: expected goals '+Number(p.expected_home).toFixed(2)+' / '+Number(p.expected_away).toFixed(2)+'. Review before sale.',access_mode:'inherit',price_ugx:0,published:true};
    if(!confirm('Publish '+p.home_team+' vs '+p.away_team+' to customers? Check league access and price after publishing.'))return;
    const {error}=await client.from('tips').insert(row);if(error)throw error;
-   await adminRefresh();await marketRefresh();status.textContent='Published. You can edit its price, access and analysis under Manage published matches.';
+   await adminRefresh();await marketRefresh();status.textContent='Match published.';
   }catch(e){status.textContent='Publish failed: '+e.message;}});actions.append(publish);
   const del=makeBtn('🗑 Delete saved match',async()=>{try{await adminRemove('predictions',p.id,p.home_team+' vs '+p.away_team);await refreshDraftQueue()}catch(e){status.textContent='Delete failed: '+e.message;}});del.className='danger';actions.append(del);
   line.append(actions);root.append(line);
@@ -1105,7 +1103,7 @@ async function adminRefresh(){if(!adminMode)return;const [ls,ts,os]=await Promis
 const edit=adminAction('✎ Edit league',()=>{div.querySelector('.admin-edit-form')?.remove();div.append(adminEditFields('leagues',l,['name','country','access_mode','price_ugx'].filter(k=>Object.hasOwn(l,k))))});edit.className='secondary';edit.type='button';controls.append(edit);
 const del=adminAction('🗑 Delete league',()=>adminRemove('leagues',l.id,l.name+' (record '+l.id+')'));del.className='danger';del.type='button';controls.append(del);
 if(Object.hasOwn(l,'enabled')){const toggle=adminAction(l.enabled?'Disable':'Enable',()=>adminPatch('leagues',l.id,{enabled:!l.enabled}));toggle.type='button';controls.append(toggle)}
-div.append(controls);lg.append(div)}if([...sel.options].some(o=>o.value===priorLeague))sel.value=priorLeague;await reloadSavedForPublishing();const tips=$('adminTips');tips.replaceChildren();for(const t of ts.data){const div=document.createElement('div');div.style.margin='8px 0';div.append(document.createTextNode(t.home_team+' vs '+t.away_team+' · '+t.access_mode+' · '+(t.published?'Published':'Unpublished')+' '));div.append(makeBtn('Edit',async()=>{const mode=prompt('Access: inherit, free, paid, hidden',t.access_mode);if(!['inherit','free','paid','hidden'].includes(mode))return;const price=Number(prompt('Price UGX',t.price_ugx));const published=confirm('Publish this match? Cancel to unpublish.');if(!Number.isInteger(price)||price<0)return;const {error}=await client.from('tips').update({access_mode:mode,price_ugx:price,published}).eq('id',t.id);if(error)alert(error.message);await adminRefresh();await marketRefresh()}));div.append(makeBtn('Delete',async()=>{if(!confirm('Delete match permanently?'))return;const {error}=await client.from('tips').delete().eq('id',t.id);if(error)alert(error.message);await adminRefresh();await marketRefresh()}));tips.append(div)}$('businessMetrics').textContent=ls.data.length+' leagues · '+ts.data.length+' predictions · '+os.data.filter(o=>o.status==='paid').length+' paid orders · UGX '+os.data.filter(o=>o.status==='paid').reduce((v,o)=>v+Number(o.amount_ugx||0),0).toLocaleString()+' recorded gross sales (latest 100 orders)';adminExtendedLists([],ts.data);if($('adminRoleDiagnostic'))$('adminRoleDiagnostic').textContent='Super Admin verified · Each league has its own Edit and Delete controls. Scroll to Manage leagues or Manage published matches.';mtext('adminStatus','Admin data loaded. '+ls.data.length+' leagues, '+ts.data.length+' tips, '+os.data.length+' orders.')}
+div.append(controls);lg.append(div)}if([...sel.options].some(o=>o.value===priorLeague))sel.value=priorLeague;await reloadSavedForPublishing();const tips=$('adminTips');tips.replaceChildren();for(const t of ts.data){const div=document.createElement('div');div.style.margin='8px 0';div.append(document.createTextNode(t.home_team+' vs '+t.away_team+' · '+t.access_mode+' · '+(t.published?'Published':'Unpublished')+' '));div.append(makeBtn('Edit',async()=>{const mode=prompt('Access: inherit, free, paid, hidden',t.access_mode);if(!['inherit','free','paid','hidden'].includes(mode))return;const price=Number(prompt('Price UGX',t.price_ugx));const published=confirm('Publish this match? Cancel to unpublish.');if(!Number.isInteger(price)||price<0)return;const {error}=await client.from('tips').update({access_mode:mode,price_ugx:price,published}).eq('id',t.id);if(error)alert(error.message);await adminRefresh();await marketRefresh()}));div.append(makeBtn('Delete',async()=>{if(!confirm('Delete match permanently?'))return;const {error}=await client.from('tips').delete().eq('id',t.id);if(error)alert(error.message);await adminRefresh();await marketRefresh()}));tips.append(div)}$('businessMetrics').textContent=ls.data.length+' leagues · '+ts.data.length+' predictions · '+os.data.filter(o=>o.status==='paid').length+' paid orders · UGX '+os.data.filter(o=>o.status==='paid').reduce((v,o)=>v+Number(o.amount_ugx||0),0).toLocaleString()+' recorded gross sales (latest 100 orders)';adminExtendedLists([],ts.data);if($('adminRoleDiagnostic'))$('adminRoleDiagnostic').textContent='Super Admin verified.';mtext('adminStatus','Dashboard updated.')}
 
 
 // Customer league-access purchasing uses the existing server-side order and PesaJet verification.
@@ -1225,9 +1223,9 @@ async function refreshSubscriptionPlans(){
  if(plans.error){$('planStatus').textContent='Subscription database setup required: '+plans.error.message;return;}
  subscriptionPlanCache=plans.data||[];
  const select=$('ticketPlan');const previous=select.value;select.replaceChildren();
- const blank=document.createElement('option');blank.value='';blank.textContent='Individual paid ticket (one-time purchase)';select.append(blank);
+ const free=document.createElement('option');free.value='__free__';free.textContent='Free ticket — everyone can view';select.append(free);const blank=document.createElement('option');blank.value='';blank.textContent='Individual paid ticket (one-time purchase)';select.append(blank);
  for(const p of subscriptionPlanCache.filter(x=>x.enabled)){const o=document.createElement('option');o.value=p.league_id;o.textContent=p.name+' · '+p.duration_days+' days';select.append(o);}
- select.value=previous;
+ select.value=[...select.options].some(o=>o.value===previous)?previous:'__free__';syncTicketPrice();
  const adminRoot=$('adminPlanList');adminRoot.replaceChildren();
  for(const p of subscriptionPlanCache){const row=document.createElement('div');row.className='panel';row.style.margin='8px 0';
  const label=document.createElement('strong');label.textContent=p.name+' · '+p.duration_days+' days · UGX '+Number(p.price_ugx).toLocaleString()+(p.enabled?' · Active':' · Disabled');
@@ -1263,26 +1261,27 @@ function ticketPickRow(values={}){
  const details=input('Selection details (optional)','text','e.g. Correct score 2-1 / kickoff time',values.details);
  const remove=makeBtn('Remove selection',()=>wrap.remove());remove.className='secondary';remove.type='button';wrap.append(fields,remove);wrap.getPick=()=>({home:home.value.trim(),away:away.value.trim(),league:competition.value.trim(),market:market.value,details:details.value.trim()});$('ticketPicks').append(wrap);
 }
-$('ticketAddPick').onclick=()=>ticketPickRow();ticketPickRow();
+$('openTicketBuilder').onclick=()=>{const builder=$('ticketBuilder');builder.classList.toggle('hidden');if(!builder.classList.contains('hidden')){builder.scrollIntoView({behavior:'smooth',block:'start'});$('ticketTitle').focus();}};
+$('ticketAddPick').onclick=()=>ticketPickRow();ticketPickRow();$('ticketPlan').value='__free__';
 function getTicketDraft(){return {title:$('ticketTitle').value.trim(),price:Number($('ticketPrice').value),plan:$('ticketPlan').value,picks:[...$('ticketPicks').children].map(x=>x.getPick())};}
-function syncTicketPrice(){const subscribed=Boolean($('ticketPlan').value);$('ticketPrice').disabled=subscribed;$('ticketPrice').title=subscribed?'The selected subscription plan controls the price.':'Set the individual ticket price.';}
+function syncTicketPrice(){const subscribed=Boolean($('ticketPlan').value);$('ticketPrice').disabled=subscribed;$('ticketPrice').title=$('ticketPlan').value==='__free__'?'Free tickets have no purchase price.':subscribed?'The selected subscription plan controls the price.':'Set the individual ticket price.';}
 $('ticketPlan').addEventListener('change',syncTicketPrice);
-$('ticketPreview').onclick=()=>{const d=getTicketDraft();const area=$('ticketPreviewArea');area.classList.remove('hidden');area.textContent=[d.title||'Untitled ticket',d.plan?'Access: selected subscription plan':'Price: '+(Number.isSafeInteger(d.price)&&d.price>0?'UGX '+d.price.toLocaleString():'Not set'),'',...d.picks.map((x,i)=>`${i+1}. ${x.home||'[Home]'} vs ${x.away||'[Away]'} · ${x.league||'Competition not specified'} · ${x.market}${x.details?' · '+x.details:''}`)].join('\n');};
-$('ticketClear').onclick=()=>{if(!confirm('Clear the ticket currently being edited?'))return;$('ticketTitle').value='';$('ticketPrice').value='';$('ticketPlan').value='';$('ticketPicks').replaceChildren();$('ticketPreviewArea').classList.add('hidden');$('ticketStatus').textContent='';ticketPickRow();syncTicketPrice();};
+$('ticketPreview').onclick=()=>{const d=getTicketDraft();const area=$('ticketPreviewArea');area.classList.remove('hidden');area.textContent=[d.title||'Untitled ticket',d.plan==='__free__'?'Access: Free':d.plan?'Access: selected subscription plan':'Price: '+(Number.isSafeInteger(d.price)&&d.price>0?'UGX '+d.price.toLocaleString():'Not set'),'',...d.picks.map((x,i)=>`${i+1}. ${x.home||'[Home]'} vs ${x.away||'[Away]'} · ${x.league||'Competition not specified'} · ${x.market}${x.details?' · '+x.details:''}`)].join('\n');};
+$('ticketClear').onclick=()=>{if(!confirm('Clear the ticket currently being edited?'))return;$('ticketTitle').value='';$('ticketPrice').value='';$('ticketPlan').value='__free__';$('ticketPicks').replaceChildren();$('ticketPreviewArea').classList.add('hidden');$('ticketStatus').textContent='';ticketPickRow();syncTicketPrice();};
 syncTicketPrice();
 $('ticketPublish').onclick=async()=>{const status=$('ticketStatus');const btn=$('ticketPublish');if(!adminMode||!client)return status.textContent='Super Admin sign-in required.';btn.disabled=true;try{
  const title=$('ticketTitle').value.trim(),price=Number($('ticketPrice').value);
  const picks=[...$('ticketPicks').children].map(x=>x.getPick());
  if(!title||title.length>100)throw Error('Enter a ticket title (up to 100 characters).');
- if(!$('ticketPlan').value&&(!Number.isSafeInteger(price)||price<=0))throw Error('Enter a valid ticket price above UGX 0.');
+ if($('ticketPlan').value===''&&(!Number.isSafeInteger(price)||price<=0))throw Error('Enter a valid ticket price above UGX 0.');
  if(picks.length<1||picks.length>30||picks.some(x=>!x.home||!x.away))throw Error('Add 1–30 selections with both team names.');
- const selectedPlan=$('ticketPlan').value;const {data:found,error:findErr}=selectedPlan?await client.from('leagues').select('id,access_mode,enabled').eq('id',selectedPlan).limit(1):await client.from('leagues').select('id,access_mode,enabled').eq('name',TICKET_LEAGUE).limit(1);if(findErr)throw findErr;
+ const accessChoice=$('ticketPlan').value;const isFree=accessChoice==='__free__';const selectedPlan=isFree?'':accessChoice;const {data:found,error:findErr}=selectedPlan?await client.from('leagues').select('id,access_mode,enabled').eq('id',selectedPlan).limit(1):await client.from('leagues').select('id,access_mode,enabled').eq('name',TICKET_LEAGUE).limit(1);if(findErr)throw findErr;
  let league=found?.[0];if(!league){const {data:created,error:createErr}=await client.from('leagues').insert({name:TICKET_LEAGUE,country:'International',access_mode:'free',price_ugx:0,enabled:true}).select('id,access_mode,enabled').single();if(createErr)throw createErr;league=created;}
  if(!league.enabled)throw Error('Selected ticket category is disabled.');if(selectedPlan&&league.access_mode!=='paid')throw Error('Subscription plan league must be paid.');if(!selectedPlan&&league.access_mode!=='free')throw Error('Individual ticket category must be free.');
  const details='TICKET_V1\n'+picks.map((x,i)=>`${i+1}. ${x.home} vs ${x.away} (${x.league||'Other'}) — ${x.market}${x.details?' — '+x.details:''}`).join('\n');
- if(!confirm(`Publish ticket "${title}" with ${picks.length} picks ${selectedPlan?'under the selected subscription plan':'for UGX '+price.toLocaleString()}?`))return;
- const {error}=await client.from('tips').insert({league_id:league.id,home_team:'🎟 '+title,away_team:picks.length+' selections',kickoff:null,draw_probability:null,predicted_score:'TICKET',analysis:details,access_mode:selectedPlan?'inherit':'paid',price_ugx:selectedPlan?0:price,published:true});if(error)throw error;
- status.textContent=(selectedPlan?'Ticket published for subscribers of the selected plan. ':'Ticket published for individual sale. ')+'Manage publication and deletion under Manage published matches.';$('ticketTitle').value='';$('ticketPrice').value='';$('ticketPreviewArea').classList.add('hidden');$('ticketPicks').replaceChildren();ticketPickRow();await adminRefresh();await marketRefresh();
+ if(!confirm(`Publish ticket "${title}" with ${picks.length} picks ${selectedPlan?'under the selected subscription plan':isFree?'as a free ticket':'for UGX '+price.toLocaleString()}?`))return;
+ const {error}=await client.from('tips').insert({league_id:league.id,home_team:'🎟 '+title,away_team:picks.length+' selections',kickoff:null,draw_probability:null,predicted_score:'TICKET',analysis:details,access_mode:selectedPlan?'inherit':isFree?'free':'paid',price_ugx:(selectedPlan||isFree)?0:price,published:true});if(error)throw error;
+ status.textContent=selectedPlan?'Ticket published for subscribers of the selected plan.':isFree?'Free ticket published.':'Ticket published for individual sale.';$('ticketTitle').value='';$('ticketPrice').value='';$('ticketPreviewArea').classList.add('hidden');$('ticketPicks').replaceChildren();ticketPickRow();await adminRefresh();await marketRefresh();
  }catch(e){status.textContent='Ticket not published: '+e.message}finally{btn.disabled=false}};
 
 $('publishTip').onclick=async()=>{if(!adminMode)return;const row={league_id:$('admLeagueSelect').value,home_team:$('admHome').value.trim(),away_team:$('admAway').value.trim(),kickoff:$('admKickoff').value?new Date($('admKickoff').value).toISOString():null,draw_probability:$('admProbability').value===''?null:Number($('admProbability').value),predicted_score:$('admScore').value.trim(),analysis:$('admAnalysis').value,access_mode:$('admMode').value,price_ugx:Number($('admPrice').value),published:true};if(!row.league_id||!row.home_team||!row.away_team)return alert('League and both teams required');const {error}=await client.from('tips').insert(row);if(error)alert(error.message);else{await adminRefresh();await marketRefresh()}};
