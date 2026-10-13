@@ -1671,13 +1671,73 @@ $('marketExport').onclick=()=>{if(!rows.length){$('marketEngineStatus').textCont
 })();
 </script>
 <script type="module" id="merchant-settlement-controller">
-/* Uses verified server-side RPCs; never stores a settlement number in localStorage. */
+/* Persistent Super Admin receiving account. Supabase is the source of truth. */
 const $m=id=>document.getElementById(id);
 const merchantStatus=message=>{$m('merchantStatus').textContent=message;};
-function normalizeUgPhone(value){const compact=value.replace(/[\s-]/g,'');const number=compact.startsWith('0')?'+256'+compact.slice(1):compact.startsWith('256')?'+'+compact:compact;if(!/^\+2567\d{8}$/.test(number))throw Error('Enter a valid Uganda mobile money number.');return number;}
-async function merchantClient(){const deployed=window.FOOT1X2_CONFIG;const stored=JSON.parse(localStorage.getItem('drawlab_supabase_config')||'null');const config={supabaseUrl:deployed?.supabaseUrl||stored?.url,supabasePublishableKey:deployed?.supabasePublishableKey||stored?.key};if(!config.supabaseUrl||!config.supabasePublishableKey)throw Error('Configure your Supabase connection first.');const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');const client=createClient(config.supabaseUrl,config.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true}});const {data:{session}}=await client.auth.getSession();if(!session)throw Error('Sign in as Super Admin first.');const {data:admin,error}=await client.rpc('is_super_admin');if(error||admin!==true)throw Error('Only a verified Super Admin can configure settlement.');return client;}
-$m('merchantSave').addEventListener('click',async()=>{const btn=$m('merchantSave');btn.disabled=true;try{const phone=normalizeUgPhone($m('merchantPhone').value),network=$m('merchantNetwork').value;const client=await merchantClient();const {data,error}=await client.rpc('save_merchant_settlement',{p_provider:network,p_phone:phone});if(error)throw error;merchantStatus('Receiving account saved securely. '+(data?.message||'Provider settlement activation is still required before funds can arrive.'));}catch(e){merchantStatus('Could not save: '+e.message)}finally{btn.disabled=false;}});
-$m('merchantReload').addEventListener('click',async()=>{try{const client=await merchantClient();const {data,error}=await client.rpc('get_merchant_settlement');if(error)throw error;const record=Array.isArray(data)?data[0]:data;if(record){$m('merchantNetwork').value=record.provider;$m('merchantPhone').value=record.phone;merchantStatus('Current receiving account loaded. '+(record.provider_status||'Provider status not yet verified.'));}else merchantStatus('No receiving account configured yet.');}catch(e){merchantStatus('Could not load: '+e.message)}});
+let merchantLoadedFor=null, merchantBusy=false;
+function normalizeUgPhone(value){
+  const digits=String(value||'').replace(/\D/g,'');
+  const canonical=digits.startsWith('0')&&digits.length===10?'256'+digits.slice(1):digits;
+  if(!/^256[0-9]{9}$/.test(canonical))throw Error('Enter a valid Uganda number, e.g. +256771234567.');
+  return '+'+canonical;
+}
+async function merchantClient(){
+  const deployed=window.FOOT1X2_CONFIG;
+  let stored=null;try{stored=JSON.parse(localStorage.getItem('drawlab_supabase_config')||'null')}catch{}
+  const url=deployed?.supabaseUrl||stored?.url;
+  const key=deployed?.supabasePublishableKey||stored?.key;
+  if(!url||!key)throw Error('Configure Supabase first.');
+  const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
+  const db=createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}});
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError||!session)throw Error('Sign in as Super Admin first.');
+  const {data:admin,error}=await db.rpc('is_super_admin');
+  if(error||admin!==true)throw Error('Only a verified Super Admin can manage this account.');
+  return {db,userId:session.user.id};
+}
+async function merchantRead(db){
+  // Compatible with both supplied Foot1X2 receiving-account SQL versions.
+  let result=await db.rpc('get_merchant_settlement');
+  if(result.error?.code==='PGRST202'||result.error?.code==='42883')result=await db.rpc('get_receiving_account');
+  if(result.error)throw result.error;
+  const row=Array.isArray(result.data)?result.data[0]:result.data;
+  if(row){
+    $m('merchantNetwork').value=row.provider;
+    $m('merchantPhone').value=row.phone||row.phone_number||'';
+    merchantStatus('Receiving account loaded from Supabase. '+(row.provider_status||'Settlement requires provider approval.'));
+  }else merchantStatus('No receiving account saved yet. Enter your number and click Save.');
+}
+async function merchantLoad(){
+  if(merchantBusy)return;
+  merchantBusy=true;
+  try{const {db,userId}=await merchantClient();await merchantRead(db);merchantLoadedFor=userId;}
+  catch(e){merchantStatus('Could not load receiving account: '+e.message)}
+  finally{merchantBusy=false;}
+}
+$m('merchantSave').addEventListener('click',async()=>{
+  const button=$m('merchantSave');button.disabled=true;
+  try{
+    const phone=normalizeUgPhone($m('merchantPhone').value),provider=$m('merchantNetwork').value;
+    const {db,userId}=await merchantClient();
+    let result=await db.rpc('save_merchant_settlement',{p_provider:provider,p_phone:phone});
+    if(result.error?.code==='PGRST202'||result.error?.code==='42883')result=await db.rpc('save_receiving_account',{p_provider:provider,p_phone_number:phone});
+    if(result.error)throw result.error;
+    merchantLoadedFor=userId;
+    await merchantRead(db); // Read back from the database to verify persistence.
+    merchantStatus('Saved and verified in Supabase: '+provider.toUpperCase()+' '+phone+'. Actual payout requires PesaJet settlement approval.');
+  }catch(e){merchantStatus('Save failed — not persisted: '+e.message)}
+  finally{button.disabled=false;}
+});
+$m('merchantReload').addEventListener('click',merchantLoad);
+$m('adminAccountNav')?.addEventListener('click',()=>{setTimeout(merchantLoad,50)});
+// Refresh after a verified administrator signs in; clear stale values on logout.
+setInterval(async()=>{
+  if(!document.body.classList.contains('role-admin')){
+    merchantLoadedFor=null;$m('merchantPhone').value='';return;
+  }
+  if(merchantBusy||merchantLoadedFor)return;
+  await merchantLoad();
+},1500);
 </script>
 </body>
 </html>
