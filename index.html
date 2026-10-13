@@ -144,6 +144,7 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
      Sign out
     </button>
    </div>
+   <p id="authStatus" role="status" aria-live="polite" style="margin:0 0 8px;padding:0 16px;color:#f0bd70;font-size:13px;display:none"></p>
   </header>
   <nav aria-label="Foot1X2 navigation" class="workspace-nav">
    <a href="#workspace">
@@ -827,7 +828,7 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <!-- Source block 1: retained from original application without logic changes. -->
 <script src="./config.js"></script>
 <script type="module">
-const $=id=>document.getElementById(id), fields=['home','away','league','kickoff','homeScored','homeConceded','awayScored','awayConceded','leagueHome','leagueAway','homeXg','awayXg','rho','xgWeight'];let client=null,user=null,current=null,history=[];const cfgKey='drawlab_supabase_config',localKey='drawlab_local_predictions';
+const $=id=>document.getElementById(id), fields=['home','away','league','kickoff','homeScored','homeConceded','awayScored','awayConceded','leagueHome','leagueAway','homeXg','awayXg','rho','xgWeight'];let client=null,user=null,current=null,history=[];let adminMode=false;const cfgKey='drawlab_supabase_config',localKey='drawlab_local_predictions';
 const msg=(s,id='message')=>$(id).textContent=s;const fmt=n=>(100*n).toFixed(1)+'%';function poisson(k,lambda){let p=Math.exp(-lambda);for(let i=1;i<=k;i++)p*=lambda/i;return p}function tau(i,j,h,a,r){if(i===0&&j===0)return 1-h*a*r;if(i===0&&j===1)return 1+h*r;if(i===1&&j===0)return 1+a*r;if(i===1&&j===1)return 1-r;return 1}function num(id,optional=false){const v=$(id).value.trim();if(optional&&v==='')return null;if(v==='')throw Error('Enter '+id);const n=Number(v);if(!Number.isFinite(n))throw Error('Invalid '+id);const min=Number($(id).min),max=Number($(id).max);if(n<min||n>max)throw Error(id+' must be between '+min+' and '+max);return n}
 function compute(){const data={};for(const id of fields)data[id]=$(id).value.trim();if(!data.home||!data.away)throw Error('Enter both team names');if(data.home.toLowerCase()===data.away.toLowerCase())throw Error('Choose different teams');const hs=num('homeScored'),hc=num('homeConceded'),as=num('awayScored'),ac=num('awayConceded'),lh=num('leagueHome'),la=num('leagueAway'),hx=num('homeXg',true),ax=num('awayXg',true),rho=num('rho'),w=num('xgWeight')/100;let h=(hs/lh)*(ac/la)*lh,a=(as/la)*(hc/lh)*la;if(hx!==null)h=(1-w)*h+w*hx;if(ax!==null)a=(1-w)*a+w*ax;h=Math.max(.01,Math.min(8,h));a=Math.max(.01,Math.min(8,a));const max=24;let grid=[],sum=0;for(let i=0;i<=max;i++){grid[i]=[];for(let j=0;j<=max;j++){const p=poisson(i,h)*poisson(j,a)*tau(i,j,h,a,rho);if(p<0)throw Error('Dixon–Coles rho makes a score probability negative. Change rho.');grid[i][j]=p;sum+=p}}let home=0,away=0,draw=0,score=[];for(let i=0;i<=max;i++)for(let j=0;j<=max;j++){const p=grid[i][j]/sum;if(i>j)home+=p;else if(j>i)away+=p;else{draw+=p;score.push({label:i+'–'+j,p})}}score.sort((x,y)=>y.p-x.p);return{data,h,a,home,away,draw,score:score.slice(0,3)}}
 function show(p){$('drawProbability').textContent=fmt(p.draw);$('expected').textContent=`Expected goals: ${p.data.home} ${p.h.toFixed(2)} — ${p.a.toFixed(2)} ${p.data.away}`;$('probabilities').replaceChildren();for(const [label,val,kind] of [['Home win',p.home,'home'],['Draw',p.draw,'draw'],['Away win',p.away,'away']]){const r=document.createElement('div');r.className='probrow';const t=document.createElement('span');t.textContent=label;const track=document.createElement('div');track.className='track';const fill=document.createElement('div');fill.className='fill '+kind;fill.style.width=fmt(val);track.append(fill);const v=document.createElement('strong');v.textContent=fmt(val);r.append(t,track,v);$('probabilities').append(r)}$('drawScores').replaceChildren();for(const s of p.score){const d=document.createElement('div');d.className='score';const b=document.createElement('strong');b.textContent=s.label;const small=document.createElement('small');small.textContent=fmt(s.p);d.append(b,small);$('drawScores').append(d)}}
@@ -843,7 +844,34 @@ function getConfig(){
     return {url:deployed.supabaseUrl.replace(/\/$/,''),key:deployed.supabasePublishableKey};
   }
   try{return JSON.parse(localStorage.getItem(cfgKey)||'null')}catch{return null}
-}async function initClient(){const c=getConfig();client=null;user=null;if(!c){msg('Not connected: predictions saved locally.','connection');toggleAuth();history=readLocal();renderHistory();return}try{const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');client=createClient(c.url,c.key,{auth:{persistSession:true,autoRefreshToken:true}});const {data,error}=await client.auth.getUser();if(error&&error.name!=='AuthSessionMissingError')throw error;user=data.user||null;msg(user?'Connected and signed in.':'Connected. Sign in to sync.','connection');toggleAuth();await loadHistory();client.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;toggleAuth();setTimeout(()=>checkAdmin().then(marketRefresh).catch(()=>{}),100);setTimeout(()=>loadHistory().catch(e=>msg(e.message,'connection')),0)})}catch(e){client=null;user=null;msg('Connection failed: '+e.message,'connection');toggleAuth();history=readLocal();renderHistory()}}
+}async function initClient(){
+  const c=getConfig();client=null;user=null;
+  if(!c){
+    authNotice('Authentication is not configured. Ask the site administrator to set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in Render.');
+    msg('Supabase configuration missing.','connection');toggleAuth();history=readLocal();renderHistory();return;
+  }
+  try{
+    const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
+    client=createClient(c.url,c.key,{auth:{persistSession:true,autoRefreshToken:true}});
+    const {data,error}=await client.auth.getSession();
+    if(error)throw error;
+    user=data?.session?.user||null;
+    authNotice('');
+    msg(user?'Connected and signed in.':'Connected. Sign in or create an account.','connection');
+    toggleAuth();await loadHistory();
+    client.auth.onAuthStateChange((_event,session)=>{
+      user=session?.user||null;toggleAuth();
+      setTimeout(()=>checkAdmin().then(marketRefresh).catch(()=>{}),100);
+      setTimeout(()=>loadHistory().catch(e=>msg(e.message,'connection')),0);
+    });
+    setTimeout(()=>checkAdmin().then(marketRefresh).catch(()=>{}),0);
+  }catch(e){
+    client=null;user=null;
+    authNotice('Authentication connection failed: '+e.message+'. Check Render environment variables, browser network and Supabase project status.');
+    msg('Connection failed: '+e.message,'connection');toggleAuth();history=readLocal();renderHistory();
+  }
+}
+function authNotice(message){const el=$('authStatus');el.textContent=message;el.style.display=message?'block':'none';}
 function toggleAuth(){if(!user){adminMode=false;document.body.classList.remove('role-admin');document.body.classList.add('role-customer');$('adminPanel').classList.add('hidden')}$('identity').textContent=user?user.email:'Local / guest';for(const id of ['email','password','login','signup'])$(id).classList.toggle('hidden',!!user);$('logout').classList.toggle('hidden',!user)}async function loadHistory(){if(!user){history=readLocal();renderHistory();return}const {data,error}=await client.from('predictions').select('*').order('created_at',{ascending:false}).limit(500);if(error)throw error;history=data||[];renderHistory()}
 const fixtureMsg=s=>msg(s,'fixtureStatus');
 function dateISO(d){return d.toISOString().slice(0,10)}
@@ -909,10 +937,24 @@ $('fetchFixtures').onclick=async()=>{const button=$('fetchFixtures');button.disa
 $('refreshCompetitions').onclick=async()=>{const b=$('refreshCompetitions');b.disabled=true;try{if(!client||!user)throw Error('Connect Supabase and sign in first');const {data:{session}}=await client.auth.getSession();const c=getConfig();const res=await fetch(c.url+'/functions/v1/football-fixtures?action=competitions',{headers:{Authorization:'Bearer '+session.access_token,apikey:c.key}});const payload=await res.json();if(!res.ok)throw Error(payload.error||'Cannot load competitions');const select=$('competitionCode');select.replaceChildren();for(const league of payload.competitions||[]){const option=document.createElement('option');option.value=league.code;option.textContent=league.name+' · '+(league.area||'International');select.append(option)}fixtureMsg(select.options.length+' provider competitions available. Coverage depends on your API subscription.')}catch(e){fixtureMsg(e.message)}finally{b.disabled=false}};
 $('calculate').onclick=()=>{try{current=compute();show(current);msg('Probabilities calculated. Click Save prediction to store.')}catch(e){current=null;msg(e.message)}};$('save').onclick=async()=>{try{current=compute();show(current);const p=current;const row={home_team:p.data.home,away_team:p.data.away,league:p.data.league,kickoff:p.data.kickoff?new Date(p.data.kickoff).toISOString():null,draw_probability:p.draw,home_win_probability:p.home,away_win_probability:p.away,expected_home:p.h,expected_away:p.a,inputs:p.data,model_version:'dc-v1',actual_home:null,actual_away:null};if(user&&client){const {error}=await client.from('predictions').insert({...row,user_id:user.id});if(error)throw error;await loadHistory();msg('Saved to Supabase.')}else{history.push({...row,id:crypto.randomUUID(),created_at:new Date().toISOString()});saveLocal();renderHistory();msg('Saved in this browser only. Sign in to save future predictions to Supabase.')}}catch(e){msg('Save failed: '+e.message)}};
 async function setResult(p){const h=prompt('Actual home goals (nonnegative integer):',p.actual_home??'');if(h===null)return;const a=prompt('Actual away goals (nonnegative integer):',p.actual_away??'');if(a===null)return;if(!/^\d+$/.test(h)||!/^\d+$/.test(a)||Number(h)>99||Number(a)>99){msg('Enter valid whole-number scores from 0 to 99.');return}try{if(user&&client){const {error}=await client.from('predictions').update({actual_home:Number(h),actual_away:Number(a)}).eq('id',p.id);if(error)throw error;await loadHistory()}else{p.actual_home=Number(h);p.actual_away=Number(a);saveLocal();renderHistory()}msg('Result updated.')}catch(e){msg('Update failed: '+e.message)}}async function deletePrediction(p){if(!confirm('Delete this prediction?'))return;try{if(user&&client){const {error}=await client.from('predictions').delete().eq('id',p.id);if(error)throw error;await loadHistory()}else{history=history.filter(x=>x.id!==p.id);saveLocal();renderHistory()}msg('Prediction deleted.')}catch(e){msg('Delete failed: '+e.message)}}
-$('connect').onclick=async()=>{const url=$('sbUrl').value.trim().replace(/\/$/,''),key=$('sbKey').value.trim();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)||!key||key.includes('service_role')||key.startsWith('sb_secret_')){msg('Use your HTTPS Supabase project URL and a publishable/anon key, never a secret key.','connection');return}localStorage.setItem(cfgKey,JSON.stringify({url,key}));await initClient()};$('disconnect').onclick=async()=>{if(client)await client.auth.signOut();localStorage.removeItem(cfgKey);$('sbUrl').value='';$('sbKey').value='';await initClient()};$('login').onclick=async()=>{if(!client)return msg('Connect Supabase first.');const {error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});msg(error?'Sign in failed: '+error.message:'Signed in.');if(!error)await loadHistory()};$('signup').onclick=async()=>{if(!client)return msg('Connect Supabase first.');const {error,data}=await client.auth.signUp({email:$('email').value.trim(),password:$('password').value});msg(error?'Sign up failed: '+error.message:data.session?'Account created and signed in.':'Account created. Check your email to confirm, then sign in.')};$('logout').onclick=async()=>{if(client)await client.auth.signOut();user=null;toggleAuth();await loadHistory();msg('Signed out.')};$('reset').onclick=()=>{for(const id of fields){if(['home','away','league','kickoff','homeXg','awayXg'].includes(id))$(id).value=''}current=null;$('drawProbability').textContent='—';$('probabilities').replaceChildren();$('drawScores').textContent='Calculate a match to see scores.';$('expected').textContent='';msg('Match fields cleared. Statistical defaults retained.')};const saved=getConfig();if(saved){$('sbUrl').value=saved.url;$('sbKey').value=saved.key}initClient();
+$('connect').onclick=async()=>{const url=$('sbUrl').value.trim().replace(/\/$/,''),key=$('sbKey').value.trim();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)||!key||key.includes('service_role')||key.startsWith('sb_secret_')){msg('Use your HTTPS Supabase project URL and a publishable/anon key, never a secret key.','connection');return}localStorage.setItem(cfgKey,JSON.stringify({url,key}));await initClient()};$('disconnect').onclick=async()=>{if(client)await client.auth.signOut();localStorage.removeItem(cfgKey);$('sbUrl').value='';$('sbKey').value='';await initClient()};async function submitAuth(mode){
+  const button=$(mode==='signup'?'signup':'login');
+  const email=$('email').value.trim(),password=$('password').value;
+  if(!client){authNotice('Supabase is not connected. The site administrator must configure the Render environment variables.');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){authNotice('Enter a valid email address.');return;}
+  if(!password){authNotice('Enter your password.');return;}
+  button.disabled=true;authNotice(mode==='signup'?'Creating your account…':'Signing in…');
+  try{
+    const result=mode==='signup'?await client.auth.signUp({email,password}):await client.auth.signInWithPassword({email,password});
+    if(result.error)throw result.error;
+    authNotice(mode==='signup'?(result.data.session?'Account created and signed in.':'Registration submitted. Check your email for the confirmation link, then sign in.'):'Signed in successfully.');
+    if(result.data.session){user=result.data.session.user;toggleAuth();await loadHistory();}
+  }catch(e){authNotice((mode==='signup'?'Sign up':'Sign in')+' failed: '+e.message);}
+  finally{button.disabled=false;}
+}
+$('login').onclick=()=>submitAuth('login');$('signup').onclick=()=>submitAuth('signup');$('logout').onclick=async()=>{if(client)await client.auth.signOut();user=null;toggleAuth();await loadHistory();msg('Signed out.')};$('reset').onclick=()=>{for(const id of fields){if(['home','away','league','kickoff','homeXg','awayXg'].includes(id))$(id).value=''}current=null;$('drawProbability').textContent='—';$('probabilities').replaceChildren();$('drawScores').textContent='Calculate a match to see scores.';$('expected').textContent='';msg('Match fields cleared. Statistical defaults retained.')};const saved=getConfig();if(saved){$('sbUrl').value=saved.url;$('sbKey').value=saved.key}initClient();
 
 // Marketplace and admin logic. The database is the authority for permissions and payment status.
-let adminMode=false;
 function mtext(id,s){$(id).textContent=s}
 function makeBtn(label,fn){const b=document.createElement('button');b.className='secondary';b.textContent=label;b.onclick=fn;return b}
 let marketCache=[];
