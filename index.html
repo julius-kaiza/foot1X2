@@ -828,7 +828,8 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <!-- Source block 1: retained from original application without logic changes. -->
 <script src="./config.js"></script>
 <script type="module">
-const $=id=>document.getElementById(id), fields=['home','away','league','kickoff','homeScored','homeConceded','awayScored','awayConceded','leagueHome','leagueAway','homeXg','awayXg','rho','xgWeight'];let client=null,user=null,current=null,history=[];let adminMode=false;const cfgKey='drawlab_supabase_config',localKey='drawlab_local_predictions';
+window.foot1x2GetAuthenticatedClient=()=>({client,user});
+ const $=id=>document.getElementById(id), fields=['home','away','league','kickoff','homeScored','homeConceded','awayScored','awayConceded','leagueHome','leagueAway','homeXg','awayXg','rho','xgWeight'];let client=null,user=null,current=null,history=[];let adminMode=false;const cfgKey='drawlab_supabase_config',localKey='drawlab_local_predictions';
 const msg=(s,id='message')=>$(id).textContent=s;const fmt=n=>(100*n).toFixed(1)+'%';function poisson(k,lambda){let p=Math.exp(-lambda);for(let i=1;i<=k;i++)p*=lambda/i;return p}function tau(i,j,h,a,r){if(i===0&&j===0)return 1-h*a*r;if(i===0&&j===1)return 1+h*r;if(i===1&&j===0)return 1+a*r;if(i===1&&j===1)return 1-r;return 1}function num(id,optional=false){const v=$(id).value.trim();if(optional&&v==='')return null;if(v==='')throw Error('Enter '+id);const n=Number(v);if(!Number.isFinite(n))throw Error('Invalid '+id);const min=Number($(id).min),max=Number($(id).max);if(n<min||n>max)throw Error(id+' must be between '+min+' and '+max);return n}
 function compute(){const data={};for(const id of fields)data[id]=$(id).value.trim();if(!data.home||!data.away)throw Error('Enter both team names');if(data.home.toLowerCase()===data.away.toLowerCase())throw Error('Choose different teams');const hs=num('homeScored'),hc=num('homeConceded'),as=num('awayScored'),ac=num('awayConceded'),lh=num('leagueHome'),la=num('leagueAway'),hx=num('homeXg',true),ax=num('awayXg',true),rho=num('rho'),w=num('xgWeight')/100;let h=(hs/lh)*(ac/la)*lh,a=(as/la)*(hc/lh)*la;if(hx!==null)h=(1-w)*h+w*hx;if(ax!==null)a=(1-w)*a+w*ax;h=Math.max(.01,Math.min(8,h));a=Math.max(.01,Math.min(8,a));const max=24;let grid=[],sum=0;for(let i=0;i<=max;i++){grid[i]=[];for(let j=0;j<=max;j++){const p=poisson(i,h)*poisson(j,a)*tau(i,j,h,a,rho);if(p<0)throw Error('Dixon–Coles rho makes a score probability negative. Change rho.');grid[i][j]=p;sum+=p}}let home=0,away=0,draw=0,score=[];for(let i=0;i<=max;i++)for(let j=0;j<=max;j++){const p=grid[i][j]/sum;if(i>j)home+=p;else if(j>i)away+=p;else{draw+=p;score.push({label:i+'–'+j,p})}}score.sort((x,y)=>y.p-x.p);return{data,h,a,home,away,draw,score:score.slice(0,3)}}
 function show(p){$('drawProbability').textContent=fmt(p.draw);$('expected').textContent=`Expected goals: ${p.data.home} ${p.h.toFixed(2)} — ${p.a.toFixed(2)} ${p.data.away}`;$('probabilities').replaceChildren();for(const [label,val,kind] of [['Home win',p.home,'home'],['Draw',p.draw,'draw'],['Away win',p.away,'away']]){const r=document.createElement('div');r.className='probrow';const t=document.createElement('span');t.textContent=label;const track=document.createElement('div');track.className='track';const fill=document.createElement('div');fill.className='fill '+kind;fill.style.width=fmt(val);track.append(fill);const v=document.createElement('strong');v.textContent=fmt(val);r.append(t,track,v);$('probabilities').append(r)}$('drawScores').replaceChildren();for(const s of p.score){const d=document.createElement('div');d.className='score';const b=document.createElement('strong');b.textContent=s.label;const small=document.createElement('small');small.textContent=fmt(s.p);d.append(b,small);$('drawScores').append(d)}}
@@ -1678,28 +1679,26 @@ const merchantStatus=message=>{$m('merchantStatus').textContent=message;};
 let merchantLoadedFor=null, merchantBusy=false;
 function normalizeUgPhone(value){
   const digits=String(value||'').replace(/\D/g,'');
-  const canonical=digits.startsWith('0')&&digits.length===10?'256'+digits.slice(1):digits;
+  const canonical=digits.startsWith('0')&&digits.length===10?'256'+digits.slice(1):digits.startsWith('256')?digits:digits.length===9?'256'+digits:digits;
   if(!/^256[0-9]{9}$/.test(canonical))throw Error('Enter a valid Uganda number, e.g. +256771234567.');
   return '+'+canonical;
 }
 async function merchantClient(){
-  const deployed=window.FOOT1X2_CONFIG;
-  let stored=null;try{stored=JSON.parse(localStorage.getItem('drawlab_supabase_config')||'null')}catch{}
-  const url=deployed?.supabaseUrl||stored?.url;
-  const key=deployed?.supabasePublishableKey||stored?.key;
-  if(!url||!key)throw Error('Configure Supabase first.');
-  const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
-  const db=createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}});
-  const {data:{session},error:sessionError}=await db.auth.getSession();
-  if(sessionError||!session)throw Error('Sign in as Super Admin first.');
+  // Reuse the SAME Supabase client and session as the main application.
+  const shared=window.foot1x2GetAuthenticatedClient?.();
+  const db=shared?.client;
+  if(!db)throw Error('Supabase is not connected. Check deployed configuration.');
+  const {data:{user},error:sessionError}=await db.auth.getUser();
+  if(sessionError||!user)throw Error('Sign in as Super Admin, then retry.');
   const {data:admin,error}=await db.rpc('is_super_admin');
-  if(error||admin!==true)throw Error('Only a verified Super Admin can manage this account.');
-  return {db,userId:session.user.id};
+  if(error)throw Error('Super Admin verification failed: '+error.message);
+  if(admin!==true)throw Error('This account is not authorized as Super Admin.');
+  return {db,userId:user.id};
 }
 async function merchantRead(db){
   // Compatible with both supplied Foot1X2 receiving-account SQL versions.
   let result=await db.rpc('foot1x2_get_settlement_v2');
-  if(result.error)throw result.error;
+  if(result.error)throw Error('Database read failed ('+(result.error.code||'unknown')+'): '+result.error.message+'. Apply the v5 SQL migration and check RPC grants.');
   const row=Array.isArray(result.data)?result.data[0]:result.data;
   if(row){
     $m('merchantNetwork').value=row.provider;
@@ -1721,7 +1720,7 @@ $m('merchantSave').addEventListener('click',async()=>{
     const phone=normalizeUgPhone($m('merchantPhone').value),provider=$m('merchantNetwork').value;
     const {db,userId}=await merchantClient();
     let result=await db.rpc('foot1x2_save_settlement_v2',{p_provider:provider,p_phone:phone});
-    if(result.error)throw result.error;
+    if(result.error)throw Error('Database save failed ('+(result.error.code||'unknown')+'): '+result.error.message+'. Apply the v5 SQL migration and check RPC grants.');
     merchantLoadedFor=userId;
     const saved=await merchantRead(db); // Read back from database, never trust a write response alone.
     if(!saved || saved.provider!==provider || normalizeUgPhone(saved.phone||saved.phone_number)!==phone){
