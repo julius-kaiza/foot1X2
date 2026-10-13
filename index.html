@@ -186,6 +186,7 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <div class="fields"><div class="field"><label for="merchantNetwork">My receiving network</label><select id="merchantNetwork"><option value="mtn">MTN Mobile Money</option><option value="airtel">Airtel Money</option></select></div>
 <div class="field"><label for="merchantPhone">My receiving phone number</label><input id="merchantPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+256750173581" aria-describedby="merchantPhoneHelp"/></div></div>
 <p class="muted" id="merchantPhoneHelp">This is YOUR receiving number, not the customer's payment number.</p>
+<div class="notice" style="margin-top:14px"><strong>Receiving-account preferences</strong><div style="display:grid;gap:12px;margin-top:12px"><label style="display:flex;align-items:center;gap:10px"><input id="merchantPersist" type="checkbox" checked style="width:auto"/> Save permanently in Supabase (required)</label><label style="display:flex;align-items:center;gap:10px"><input id="merchantDefault" type="checkbox" checked style="width:auto"/> Mark as default subscription receiving account</label><label style="display:flex;align-items:center;gap:10px"><input id="merchantRemember" type="checkbox" style="width:auto"/> Remember this number on this device (optional)</label></div><p class="muted" style="font-size:12px">The default flag is a database preference; your payment provider must separately approve payout routing. No subscription payment is redirected merely by checking a box.</p></div>
 <div class="actions"><button id="merchantSave" type="button">Save my receiving number</button><button id="merchantReload" type="button" class="secondary">View saved receiving number</button></div>
 <p id="merchantStatus" class="status" role="status" aria-live="polite">Sign in as Super Admin. Install the included settlement migration before saving.</p>
 </section>
@@ -1698,11 +1699,14 @@ async function merchantClient(){
 async function merchantRead(db){
   // Compatible with both supplied Foot1X2 receiving-account SQL versions.
   let result=await db.rpc('foot1x2_get_settlement_v2');
-  if(result.error)throw Error('Database read failed ('+(result.error.code||'unknown')+'): '+result.error.message+'. Apply the v5 SQL migration and check RPC grants.');
+  if(result.error)throw Error('Database read failed ('+(result.error.code||'unknown')+'): '+result.error.message+'. Apply the v6 SQL migration and check RPC grants.');
   const row=Array.isArray(result.data)?result.data[0]:result.data;
   if(row){
     $m('merchantNetwork').value=row.provider;
     $m('merchantPhone').value=row.phone||row.phone_number||'';
+    $m('merchantPersist').checked=true;
+    $m('merchantDefault').checked=row.is_default_for_subscriptions===true;
+    if($m('merchantRemember').checked)localStorage.setItem('foot1x2_merchant_device_copy',JSON.stringify({provider:row.provider,phone:row.phone||row.phone_number}));
     merchantStatus('Persisted account loaded from Supabase. Last updated: '+(row.updated_at?new Date(row.updated_at).toLocaleString():'unknown')+'. '+(row.provider_status||'Settlement requires provider approval.'));
   }else merchantStatus('No receiving account saved yet. Enter your number and click Save.');
   return row || null;
@@ -1717,15 +1721,18 @@ async function merchantLoad(){
 $m('merchantSave').addEventListener('click',async()=>{
   const button=$m('merchantSave');button.disabled=true;
   try{
+    if(!$m('merchantPersist').checked)throw Error('Select Save permanently in Supabase to save this account.');
     const phone=normalizeUgPhone($m('merchantPhone').value),provider=$m('merchantNetwork').value;
     const {db,userId}=await merchantClient();
-    let result=await db.rpc('foot1x2_save_settlement_v2',{p_provider:provider,p_phone:phone});
-    if(result.error)throw Error('Database save failed ('+(result.error.code||'unknown')+'): '+result.error.message+'. Apply the v5 SQL migration and check RPC grants.');
+    let result=await db.rpc('foot1x2_save_settlement_v3',{p_provider:provider,p_phone:phone,p_is_default:$m('merchantDefault').checked});
+    if(result.error)throw Error('Database save failed ('+(result.error.code||'unknown')+'): '+result.error.message+'. Apply the v6 SQL migration and check RPC grants.');
     merchantLoadedFor=userId;
     const saved=await merchantRead(db); // Read back from database, never trust a write response alone.
-    if(!saved || saved.provider!==provider || normalizeUgPhone(saved.phone||saved.phone_number)!==phone){
+    if(!saved || saved.provider!==provider || normalizeUgPhone(saved.phone||saved.phone_number)!==phone || saved.is_default_for_subscriptions!==$m('merchantDefault').checked){
       throw Error('The receiving number could not be verified in Supabase. Please try again.');
     }
+    if($m('merchantRemember').checked)localStorage.setItem('foot1x2_merchant_device_copy',JSON.stringify({provider,phone}));
+    else localStorage.removeItem('foot1x2_merchant_device_copy');
     merchantStatus('Saved and verified in Supabase: '+provider.toUpperCase()+' '+phone+'. Refresh this page to confirm it reloads. Actual payout requires PesaJet settlement approval.');
   }catch(e){merchantStatus('Save failed — not persisted: '+e.message)}
   finally{button.disabled=false;}
@@ -1733,6 +1740,7 @@ $m('merchantSave').addEventListener('click',async()=>{
 $m('merchantReload').addEventListener('click',merchantLoad);
 $m('adminAccountNav')?.addEventListener('click',()=>{setTimeout(merchantLoad,50)});
 // Refresh after a verified administrator signs in; clear stale values on logout.
+document.getElementById('merchantRemember').addEventListener('change',e=>{if(!e.target.checked)localStorage.removeItem('foot1x2_merchant_device_copy');});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.body.classList.contains('role-admin')){merchantLoadedFor=null;merchantLoad();}});
 setInterval(async()=>{
   if(!document.body.classList.contains('role-admin')){
