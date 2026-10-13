@@ -787,7 +787,13 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <div class="actions"><button type="button" class="secondary" id="ticketAddPick">+ Add match selection</button><button type="button" class="secondary" id="ticketPreview">Preview ticket</button><button type="button" class="secondary" id="ticketClear">Clear builder</button><button type="button" id="ticketPublish">Publish ticket for sale</button></div><div id="ticketPreviewArea" class="notice hidden" aria-live="polite" style="white-space:pre-line"></div>
 <p class="status" id="ticketStatus" role="status"></p>
 </section>
-<!-- Individual payment records are maintained securely in Supabase, not displayed in this dashboard. -->
+<section class="panel admin-only" id="orderVisibilityPanel" style="margin:18px 0;border:1px solid #38546c">
+<h3>Order display management</h3>
+<p class="muted">Hide obsolete or confusing orders from the administration view without deleting payment records or changing payment verification. Only verified Super Admins may archive or restore an order. Install the accompanying SQL migration first.</p>
+<div class="actions"><button class="secondary" type="button" id="refreshOrderVisibility">Manage order visibility</button><label style="display:flex;align-items:center;gap:8px"><input id="showArchivedOrders" type="checkbox" style="width:auto"> Show archived orders</label></div>
+<p class="status" id="orderVisibilityStatus" role="status"></p><div id="orderVisibilityRows"></div>
+</section>
+<!-- Financial records remain intact; this is an administrative display-only archive. -->
 <p class="status" id="adminStatus">
 </p>
 </section>
@@ -1105,6 +1111,39 @@ const del=adminAction('🗑 Delete league',()=>adminRemove('leagues',l.id,l.name
 if(Object.hasOwn(l,'enabled')){const toggle=adminAction(l.enabled?'Disable':'Enable',()=>adminPatch('leagues',l.id,{enabled:!l.enabled}));toggle.type='button';controls.append(toggle)}
 div.append(controls);lg.append(div)}if([...sel.options].some(o=>o.value===priorLeague))sel.value=priorLeague;await reloadSavedForPublishing();const tips=$('adminTips');tips.replaceChildren();for(const t of ts.data){const div=document.createElement('div');div.style.margin='8px 0';div.append(document.createTextNode(t.home_team+' vs '+t.away_team+' · '+t.access_mode+' · '+(t.published?'Published':'Unpublished')+' '));div.append(makeBtn('Edit',async()=>{const mode=prompt('Access: inherit, free, paid, hidden',t.access_mode);if(!['inherit','free','paid','hidden'].includes(mode))return;const price=Number(prompt('Price UGX',t.price_ugx));const published=confirm('Publish this match? Cancel to unpublish.');if(!Number.isInteger(price)||price<0)return;const {error}=await client.from('tips').update({access_mode:mode,price_ugx:price,published}).eq('id',t.id);if(error)alert(error.message);await adminRefresh();await marketRefresh()}));div.append(makeBtn('Delete',async()=>{if(!confirm('Delete match permanently?'))return;const {error}=await client.from('tips').delete().eq('id',t.id);if(error)alert(error.message);await adminRefresh();await marketRefresh()}));tips.append(div)}$('businessMetrics').textContent=ls.data.length+' leagues · '+ts.data.length+' predictions · '+os.data.filter(o=>o.status==='paid').length+' paid orders · UGX '+os.data.filter(o=>o.status==='paid').reduce((v,o)=>v+Number(o.amount_ugx||0),0).toLocaleString()+' recorded gross sales (latest 100 orders)';adminExtendedLists([],ts.data);if($('adminRoleDiagnostic'))$('adminRoleDiagnostic').textContent='Super Admin verified.';mtext('adminStatus','Dashboard updated.')}
 
+
+// Admin-only order display archive. This does NOT change financial records or payment status.
+async function manageOrderVisibility(){
+ const rows=$('orderVisibilityRows'),status=$('orderVisibilityStatus');
+ if(!adminMode||!client||!user){status.textContent='Super Admin sign-in required.';return;}
+ const {data:allowed,error:roleError}=await client.rpc('is_super_admin');
+ if(roleError||allowed!==true){status.textContent='Super Admin authorization required.';return;}
+ const [orders,archived]=await Promise.all([
+  client.from('orders').select('id,status,amount_ugx,created_at').order('created_at',{ascending:false}).limit(100),
+  client.from('foot1x2_admin_hidden_orders').select('order_id,hidden_at').limit(1000)
+ ]);
+ if(orders.error||archived.error){status.textContent='Could not load order visibility. Install the order visibility SQL migration and check admin permissions. '+(orders.error?.message||archived.error?.message||'');return;}
+ const hidden=new Set((archived.data||[]).map(x=>x.order_id));
+ const showArchived=$('showArchivedOrders').checked;
+ rows.replaceChildren();let count=0;
+ for(const order of orders.data||[]){
+  const isHidden=hidden.has(order.id);if(isHidden&&!showArchived)continue;count++;
+  const line=document.createElement('div');line.style.cssText='display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:1px solid #345064;padding:12px 0';
+  const label=document.createElement('span');label.textContent=`${order.id} · ${order.status} · UGX ${Number(order.amount_ugx||0).toLocaleString()}${isHidden?' · Archived':''}`;
+  const button=document.createElement('button');button.type='button';button.className=isHidden?'secondary':'danger';button.textContent=isHidden?'Restore display':'Hide from dashboard';
+  button.onclick=async()=>{
+   if(!confirm((isHidden?'Restore':'Hide')+' this order in the administration view? Payment records will remain unchanged.'))return;
+   button.disabled=true;
+   const {error}=await client.rpc('foot1x2_set_order_visibility',{p_order_id:order.id,p_hidden:!isHidden});
+   if(error){status.textContent=error.message;button.disabled=false;return;}
+   await manageOrderVisibility();
+  };
+  line.append(label,button);rows.append(line);
+ }
+ status.textContent=count?`${count} order(s) displayed. Financial records are retained.`:'No orders to display.';
+}
+$('refreshOrderVisibility').onclick=()=>manageOrderVisibility().catch(e=>$('orderVisibilityStatus').textContent=e.message);
+$('showArchivedOrders').onchange=()=>manageOrderVisibility().catch(e=>$('orderVisibilityStatus').textContent=e.message);
 
 // Customer league-access purchasing uses the existing server-side order and PesaJet verification.
 // Do not equate these orders with recurring/time-limited subscriptions.
