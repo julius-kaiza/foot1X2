@@ -593,7 +593,7 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
        Check payment status
       </button>
 </div>
-<p class="status" id="pesajetStatus" role="status">
+<p class="status" id="pesajetStatus" role="status" aria-live="polite" style="white-space:pre-line;line-height:1.6">
 </p>
 </div>
 <section id="adminMarketplaceDrafts" class="admin-only" style="margin:22px 0;padding:18px;border:1px solid #397568;border-radius:12px;background:#102b35"><h3>Saved predictions · Super Admin review queue</h3><p class="muted">Every prediction saved to Supabase appears here for the verified Super Admin. Edit, delete, or publish it. Customers see only published tips.</p><div class="actions"><button id="refreshDraftQueue" type="button" class="secondary">Refresh saved matches</button></div><p id="draftQueueStatus" class="status" role="status"></p><div id="draftQueueRows"></div></section>
@@ -1185,8 +1185,38 @@ async function callPayments(action,payload={}){
 }
 function startPesaJetCheckout(tipId,leagueId){if(!user)return alert('Sign in first');checkoutTip=tipId;checkoutLeague=leagueId;checkoutOrder=null;$('pesajetCheckout').classList.remove('hidden');checkoutMsg('Enter the mobile money number. A request is not proof that a phone prompt was delivered; check the verified payment status before retrying.');$('pesajetProduct').textContent=tipId?'Purchase selected match prediction':'Purchase league access';$('pesajetCheckout').scrollIntoView({behavior:'smooth',block:'center'})}
 $('pesajetCancel').onclick=()=>$('pesajetCheckout').classList.add('hidden');
-$('pesajetPay').onclick=async()=>{const b=$('pesajetPay');b.disabled=true;checkoutMsg('Contacting payment gateway…');try{const phone=$('pesajetPhone').value.trim(),provider=$('pesajetProvider').value;if(!/^\+2567[0-9]{8}$/.test(phone))throw Error('Enter number as +2567XXXXXXXX');const r=await callPayments('create',{tip_id:checkoutTip,league_id:checkoutLeague,phone,provider});if(!r.order_id)throw Error('Payment server did not return an order reference. Do not retry until you check your orders.');checkoutOrder=r.order_id;const state=String(r.status||'unknown').toLowerCase();const msg=String(r.message||'').trim();if(state==='paid'){checkoutMsg('Payment verified. Access is unlocked. Order: '+checkoutOrder);await marketRefresh()}else if(r.gateway_accepted===true){checkoutMsg('Gateway accepted the request. If a mobile money prompt appears, approve it; otherwise check payment status. Order: '+checkoutOrder+(msg?' · '+msg:''));}else if(state==='pending'){checkoutMsg('Order pending; a phone prompt has NOT been confirmed. Check payment status before attempting another payment. Order: '+checkoutOrder+(msg?' · '+msg:''));}else{checkoutMsg('Payment state: '+state+'. No phone prompt has been confirmed. Order: '+checkoutOrder+(msg?' · '+msg:''));}}catch(e){checkoutMsg(e.message)}finally{b.disabled=false}};
-$('pesajetCheck').onclick=async()=>{if(!checkoutOrder)return checkoutMsg('Start a payment first.');try{const r=await callPayments('status',{order_id:checkoutOrder});checkoutMsg('Verified database order status: '+r.status+(r.status==='paid'?' — prediction unlocked.':' — payment not confirmed. If no prompt arrived, contact support with your order ID.'));if(r.status==='paid')await marketRefresh()}catch(e){checkoutMsg(e.message)}};
+function formatPaymentStatus(result, orderId){
+ const status=String(result?.status||'unknown').toLowerCase();
+ const ref=orderId?'\nOrder reference: '+orderId:'';
+ const details=String(result?.message||'').trim();
+ if(status==='paid')return 'Payment Successful\nYour payment has been verified and your purchased access is now available.'+ref;
+ if(['failed','failure','rejected','declined'].includes(status))return 'Payment Unsuccessful\nThe payment could not be completed. No premium access has been activated. Check your mobile money transaction history before trying again.'+ref;
+ if(['cancelled','canceled'].includes(status))return 'Payment Cancelled\nThe transaction was cancelled. No premium access has been activated.'+ref;
+ if(['expired','timeout','timed_out'].includes(status))return 'Payment Expired\nThe payment request expired without a confirmed payment. Check your mobile money history before making a new request.'+ref;
+ if(status==='pending')return (result?.gateway_accepted===true?'Payment Pending\nThe payment gateway accepted the request, but payment has not yet been verified.':'Payment Not Yet Confirmed\nYour order is pending. A mobile money prompt has not been confirmed.')+'\nIf no prompt arrived, check your payment status before attempting another payment.'+ref+(details?'\n'+details:'');
+ return 'Payment Status Unavailable\nThe payment has not been verified. Please check the status or contact support before retrying.'+ref;
+}
+$('pesajetPay').onclick=async()=>{
+ const b=$('pesajetPay');b.disabled=true;checkoutMsg('Contacting the payment gateway. Please wait…');
+ try{
+  if(checkoutOrder){const existing=await callPayments('status',{order_id:checkoutOrder});const st=String(existing.status||'').toLowerCase();if(st==='pending'||st==='paid'){checkoutMsg(formatPaymentStatus(existing,checkoutOrder));if(st==='paid')await marketRefresh();return;}}
+  const phone=$('pesajetPhone').value.trim(),provider=$('pesajetProvider').value;
+  if(!/^\+2567[0-9]{8}$/.test(phone))throw Error('Enter a valid Uganda mobile money number, for example +2567XXXXXXXX.');
+  const r=await callPayments('create',{tip_id:checkoutTip,league_id:checkoutLeague,phone,provider});
+  if(!r.order_id)throw Error('Payment status could not be established. Check your orders before retrying.');
+  checkoutOrder=r.order_id;
+  checkoutMsg(formatPaymentStatus(r,checkoutOrder));
+  if(String(r.status).toLowerCase()==='paid')await marketRefresh();
+ }catch(e){checkoutMsg('Payment Could Not Be Confirmed\n'+(e?.message||'Unexpected payment error')+'\nIf money was deducted, do not pay again. Contact support with your order reference.');}
+ finally{b.disabled=false;}
+};
+$('pesajetCheck').onclick=async()=>{
+ if(!checkoutOrder)return checkoutMsg('No Payment Selected\nStart checkout or open your orders to locate the payment reference.');
+ const b=$('pesajetCheck');b.disabled=true;checkoutMsg('Checking payment status…');
+ try{const r=await callPayments('status',{order_id:checkoutOrder});checkoutMsg(formatPaymentStatus(r,checkoutOrder));if(String(r.status).toLowerCase()==='paid')await marketRefresh();}
+ catch(e){checkoutMsg('Payment Status Unavailable\n'+(e?.message||'Unable to check payment')+'\nDo not retry payment until the previous transaction has been checked.');}
+ finally{b.disabled=false;}
+};
 $('browseMarket').onclick=marketRefresh;
 $('myOrders').onclick=async()=>{if(!client||!user)return alert('Sign in first');const {data,error}=await client.from('orders').select('id,status,amount_ugx,created_at').order('created_at',{ascending:false});alert(error?error.message:(data||[]).map(o=>o.id+' · '+o.status+' · UGX '+o.amount_ugx).join('\n')||'No orders')};
 $('createLeague').onclick=async()=>{if(!adminMode)return;const name=$('admLeagueName').value.trim();if(!name)return alert('League name required');const {error}=await client.from('leagues').insert({name,country:$('admCountry').value.trim(),access_mode:$('admLeagueMode').value,price_ugx:Number($('admLeaguePrice').value)});if(error)alert(error.message);else await adminRefresh()};
