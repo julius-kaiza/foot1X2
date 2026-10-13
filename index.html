@@ -510,13 +510,13 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 </div>
 </section>
 </div>
-<section class="panel" id="customerSubscriptions" aria-labelledby="subscriptionTitle"><h2 id="subscriptionTitle">Subscribe to league predictions</h2><p class="muted">Choose a paid league to unlock its eligible published predictions. Access is activated only after verified mobile money payment. Current backend purchases provide league access without a monthly expiry; recurring subscriptions require an additional server-side billing upgrade.</p><div class="actions"><button id="loadLeagueSubscriptions" class="secondary" type="button">View league access options</button><button id="viewMyLeagueAccess" class="secondary" type="button">My league access</button></div><p class="status" id="leagueSubscriptionStatus" role="status"></p><div id="leagueSubscriptionRows" class="grid" style="display:block"></div></section>
+<section class="panel" id="customerSubscriptions" aria-labelledby="subscriptionTitle"><h2 id="subscriptionTitle">Subscribe to league predictions</h2><p class="muted">Select a league below and choose Pay for league access. Only verified payments unlock premium predictions. Access is activated only after verified mobile money payment. Current backend purchases provide league access without a monthly expiry; recurring subscriptions require an additional server-side billing upgrade.</p><div class="actions"><button id="loadLeagueSubscriptions" class="secondary" type="button">Show leagues &amp; prices</button><button id="viewMyLeagueAccess" class="secondary" type="button">My league access</button></div><p class="status" id="leagueSubscriptionStatus" role="status"></p><div id="leagueSubscriptionRows" class="grid" style="display:block"></div></section>
 <section class="full panel" id="marketplaceWorkspace">
 <h2>
      Draw marketplace · Free and premium
     </h2>
 <p class="muted">
-     Customers can browse published matches. Paid analyses remain protected until payment is verified. Requests are not payments.
+     Browse published fixtures below. Free tips are visible without payment; premium analysis requires a verified purchase. Use Pay for this match or the league access plans above. My purchases shows verified paid orders only.
     </p>
 <div class="fields">
 <div class="field">
@@ -540,7 +540,7 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
         Premium
        </option>
 <option value="unlocked">
-        My unlocked
+        My purchases
        </option>
 </select>
 </div>
@@ -829,7 +829,7 @@ function getConfig(){
     toggleAuth();await loadHistory();
     client.auth.onAuthStateChange((_event,session)=>{
       user=session?.user||null;toggleAuth();
-      setTimeout(()=>checkAdmin().then(marketRefresh).catch(()=>{}),100);
+      setTimeout(()=>checkAdmin().then(marketRefresh).then(loadLeagueSubscriptionOptions).catch(()=>{}),100);
       setTimeout(()=>loadHistory().catch(e=>msg(e.message,'connection')),0);
     });
     setTimeout(()=>checkAdmin().then(marketRefresh).catch(()=>{}),0);
@@ -927,8 +927,10 @@ $('login').onclick=()=>submitAuth('login');$('signup').onclick=()=>submitAuth('s
 function mtext(id,s){$(id).textContent=s}
 function makeBtn(label,fn){const b=document.createElement('button');b.className='secondary';b.textContent=label;b.onclick=fn;return b}
 let marketCache=[];
-async function marketRefresh(){if(!client)return mtext('marketStatus','Connect Supabase to browse.');const {data,error}=await client.rpc('browse_tips');if(error)return mtext('marketStatus',error.message);marketCache=data||[];renderMarket();if(adminMode)await refreshDraftQueue();}
-function renderMarket(){const body=$('marketRows');body.replaceChildren();const term=$('marketSearch').value.trim().toLowerCase(),filter=$('marketFilter').value;const matches=marketCache.filter(t=>(t.league_name+' '+t.home_team+' '+t.away_team).toLowerCase().includes(term)&&(filter==='all'||(filter==='unlocked'?t.unlocked:t.access_mode===filter)));for(const t of matches){const tr=document.createElement('tr');for(const x of [t.league_name+' · '+t.home_team+' vs '+t.away_team,t.kickoff?new Date(t.kickoff).toLocaleString():'—',t.unlocked?'Unlocked':t.access_mode,t.unlocked?((t.draw_probability==null?'—':(t.draw_probability*100).toFixed(1)+'%')+' · '+(t.predicted_score||'')+' · '+(t.analysis||'')):'🔒 Premium analysis protected']){const td=document.createElement('td');td.textContent=x;tr.append(td)}const td=document.createElement('td');if(!t.unlocked&&t.access_mode==='paid')td.append(makeBtn('Buy match · UGX '+Number(t.price_ugx).toLocaleString(),()=>startPesaJetCheckout(t.id,null)));tr.append(td);body.append(tr)}if(!matches.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='No matching published predictions.';tr.append(td);body.append(tr)}mtext('marketStatus',matches.length+' of '+marketCache.length+' published predictions shown.');}
+let purchasedTipIds=new Set(),purchasedLeagueIds=new Set();
+async function loadVerifiedPurchases(){purchasedTipIds=new Set();purchasedLeagueIds=new Set();if(!client||!user)return;const {data,error}=await client.from('orders').select('tip_id,league_id').eq('status','paid');if(error){console.warn('Cannot load verified purchases:',error.message);return;}for(const o of data||[]){if(o.tip_id)purchasedTipIds.add(o.tip_id);if(o.league_id)purchasedLeagueIds.add(o.league_id);}}
+async function marketRefresh(){await loadVerifiedPurchases();if(!client)return mtext('marketStatus','Connect Supabase to browse.');const {data,error}=await client.rpc('browse_tips');if(error)return mtext('marketStatus',error.message);marketCache=data||[];renderMarket();if(adminMode)await refreshDraftQueue();}
+function renderMarket(){const body=$('marketRows');body.replaceChildren();const term=$('marketSearch').value.trim().toLowerCase(),filter=$('marketFilter').value;const matches=marketCache.filter(t=>(t.league_name+' '+t.home_team+' '+t.away_team).toLowerCase().includes(term)&&(filter==='all'||(filter==='unlocked'?(purchasedTipIds.has(t.id)||purchasedLeagueIds.has(t.league_id)):t.access_mode===filter)));for(const t of matches){const tr=document.createElement('tr');for(const x of [t.league_name+' · '+t.home_team+' vs '+t.away_team,t.kickoff?new Date(t.kickoff).toLocaleString():'—',t.unlocked?'Unlocked':t.access_mode,t.unlocked?((t.draw_probability==null?'—':(t.draw_probability*100).toFixed(1)+'%')+' · '+(t.predicted_score||'')+' · '+(t.analysis||'')):'🔒 Premium analysis protected']){const td=document.createElement('td');td.textContent=x;tr.append(td)}const td=document.createElement('td');if(!t.unlocked&&t.access_mode==='paid'){td.append(makeBtn('Pay for this match · UGX '+Number(t.price_ugx).toLocaleString(),()=>startPesaJetCheckout(t.id,null)));const leagueBtn=makeBtn('See league plans',()=>{document.getElementById('customerSubscriptions').scrollIntoView({behavior:'smooth'});loadLeagueSubscriptionOptions();});leagueBtn.className='secondary';leagueBtn.style.marginLeft='6px';td.append(leagueBtn);}tr.append(td);body.append(tr)}if(!matches.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='No matching published predictions.';tr.append(td);body.append(tr)}mtext('marketStatus',matches.length+' of '+marketCache.length+' published predictions shown.');}
 
 // Saved predictions are a private administrator review queue, not customer-visible tips.
 async function refreshDraftQueue(){
@@ -1104,7 +1106,7 @@ async function loadLeagueSubscriptionOptions(){
   const card=document.createElement('div');card.style.cssText='margin:10px 0;padding:15px;border:1px solid #36566a;border-radius:12px;background:#102538';
   const name=document.createElement('strong');name.textContent=l.name+' · '+(l.country||'International');
   const price=document.createElement('p');price.textContent='League access · UGX '+Number(l.price_ugx||0).toLocaleString();
-  const btn=makeBtn('Get league access',()=>startPesaJetCheckout(null,l.id));btn.disabled=!user;
+  const btn=makeBtn('Pay UGX '+Number(l.price_ugx||0).toLocaleString()+' · Unlock league',()=>startPesaJetCheckout(null,l.id));btn.disabled=!user;
   card.append(name,price,btn);root.append(card);
  }
  if(!user)status.textContent+=' Sign in to purchase.';
@@ -1149,7 +1151,7 @@ $('myOrders').onclick=async()=>{if(!client||!user)return alert('Sign in first');
 $('createLeague').onclick=async()=>{if(!adminMode)return;const name=$('admLeagueName').value.trim();if(!name)return alert('League name required');const {error}=await client.from('leagues').insert({name,country:$('admCountry').value.trim(),access_mode:$('admLeagueMode').value,price_ugx:Number($('admLeaguePrice').value)});if(error)alert(error.message);else await adminRefresh()};
 $('publishTip').onclick=async()=>{if(!adminMode)return;const row={league_id:$('admLeagueSelect').value,home_team:$('admHome').value.trim(),away_team:$('admAway').value.trim(),kickoff:$('admKickoff').value?new Date($('admKickoff').value).toISOString():null,draw_probability:$('admProbability').value===''?null:Number($('admProbability').value),predicted_score:$('admScore').value.trim(),analysis:$('admAnalysis').value,access_mode:$('admMode').value,price_ugx:Number($('admPrice').value),published:true};if(!row.league_id||!row.home_team||!row.away_team)return alert('League and both teams required');const {error}=await client.from('tips').insert(row);if(error)alert(error.message);else{await adminRefresh();await marketRefresh()}};
 setInterval(()=>{if(client&&user)checkAdmin().catch(()=>{})},120000);
-const oldInit=initClient;initClient=async function(){await oldInit();await checkAdmin();await marketRefresh()};
+const oldInit=initClient;initClient=async function(){await oldInit();await checkAdmin();await marketRefresh();await loadLeagueSubscriptionOptions()};
 </script>
 <!-- Source block 2: retained from original application without logic changes. -->
 <script id="bundle-schema" type="text/plain">-- ===== supabase.sql =====
