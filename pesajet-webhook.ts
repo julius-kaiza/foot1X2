@@ -782,11 +782,11 @@ body.role-customer .workspace-nav a.admin-only {display:none!important}
 <p class="status" id="planStatus"></p><div id="adminPlanList"></div>
 </section>
 <section class="panel" id="ticketBuilder" style="margin:18px 0;border:1px solid #398977">
-<h3>Premium tickets · Create multi-match picks</h3>
+<h3>Premium Ticket Builder</h3>
 <p class="muted">Create one priced ticket with multiple selections. Customers pay once to unlock every pick on that ticket. Works with manual matches and does not require fixture API IDs.</p>
-<div class="fields"><div class="field"><label for="ticketPlan">Offer ticket in subscription plan (optional)</label><select id="ticketPlan"><option value="">Individual paid ticket (one-time purchase)</option></select></div><div class="field"><label for="ticketTitle">Ticket title</label><input id="ticketTitle" placeholder="e.g. Weekend 4-match accumulator"></div><div class="field"><label for="ticketPrice">Ticket price (UGX)</label><input id="ticketPrice" type="number" min="1" step="1" value="5000"></div></div>
+<div class="fields"><div class="field"><label for="ticketPlan">Offer ticket in subscription plan (optional)</label><select id="ticketPlan"><option value="">Individual paid ticket (one-time purchase)</option></select></div><div class="field"><label for="ticketTitle">Ticket title</label><input id="ticketTitle" placeholder="e.g. Weekend 4-match accumulator"></div><div class="field"><label for="ticketPrice">Ticket price (UGX)</label><input id="ticketPrice" type="number" min="1" step="1" placeholder="Enter ticket price"></div></div>
 <div id="ticketPicks"></div>
-<div class="actions"><button type="button" class="secondary" id="ticketAddPick">+ Add match selection</button><button type="button" id="ticketPublish">Publish ticket for sale</button></div>
+<div class="actions"><button type="button" class="secondary" id="ticketAddPick">+ Add match selection</button><button type="button" class="secondary" id="ticketPreview">Preview ticket</button><button type="button" class="secondary" id="ticketClear">Clear builder</button><button type="button" id="ticketPublish">Publish ticket for sale</button></div><div id="ticketPreviewArea" class="notice hidden" aria-live="polite" style="white-space:pre-line"></div>
 <p class="status" id="ticketStatus" role="status"></p>
 </section>
 <!-- Individual payment records are maintained securely in Supabase, not displayed in this dashboard. -->
@@ -1264,24 +1264,30 @@ function ticketPickRow(values={}){
  const remove=makeBtn('Remove selection',()=>wrap.remove());remove.className='secondary';remove.type='button';wrap.append(fields,remove);wrap.getPick=()=>({home:home.value.trim(),away:away.value.trim(),league:competition.value.trim(),market:market.value,details:details.value.trim()});$('ticketPicks').append(wrap);
 }
 $('ticketAddPick').onclick=()=>ticketPickRow();ticketPickRow();
+function getTicketDraft(){return {title:$('ticketTitle').value.trim(),price:Number($('ticketPrice').value),plan:$('ticketPlan').value,picks:[...$('ticketPicks').children].map(x=>x.getPick())};}
+function syncTicketPrice(){const subscribed=Boolean($('ticketPlan').value);$('ticketPrice').disabled=subscribed;$('ticketPrice').title=subscribed?'The selected subscription plan controls the price.':'Set the individual ticket price.';}
+$('ticketPlan').addEventListener('change',syncTicketPrice);
+$('ticketPreview').onclick=()=>{const d=getTicketDraft();const area=$('ticketPreviewArea');area.classList.remove('hidden');area.textContent=[d.title||'Untitled ticket',d.plan?'Access: selected subscription plan':'Price: '+(Number.isSafeInteger(d.price)&&d.price>0?'UGX '+d.price.toLocaleString():'Not set'),'',...d.picks.map((x,i)=>`${i+1}. ${x.home||'[Home]'} vs ${x.away||'[Away]'} · ${x.league||'Competition not specified'} · ${x.market}${x.details?' · '+x.details:''}`)].join('\n');};
+$('ticketClear').onclick=()=>{if(!confirm('Clear the ticket currently being edited?'))return;$('ticketTitle').value='';$('ticketPrice').value='';$('ticketPlan').value='';$('ticketPicks').replaceChildren();$('ticketPreviewArea').classList.add('hidden');$('ticketStatus').textContent='';ticketPickRow();syncTicketPrice();};
+syncTicketPrice();
 $('ticketPublish').onclick=async()=>{const status=$('ticketStatus');const btn=$('ticketPublish');if(!adminMode||!client)return status.textContent='Super Admin sign-in required.';btn.disabled=true;try{
  const title=$('ticketTitle').value.trim(),price=Number($('ticketPrice').value);
  const picks=[...$('ticketPicks').children].map(x=>x.getPick());
  if(!title||title.length>100)throw Error('Enter a ticket title (up to 100 characters).');
- if(!Number.isSafeInteger(price)||price<=0)throw Error('Enter a valid ticket price above UGX 0.');
+ if(!$('ticketPlan').value&&(!Number.isSafeInteger(price)||price<=0))throw Error('Enter a valid ticket price above UGX 0.');
  if(picks.length<1||picks.length>30||picks.some(x=>!x.home||!x.away))throw Error('Add 1–30 selections with both team names.');
  const selectedPlan=$('ticketPlan').value;const {data:found,error:findErr}=selectedPlan?await client.from('leagues').select('id,access_mode,enabled').eq('id',selectedPlan).limit(1):await client.from('leagues').select('id,access_mode,enabled').eq('name',TICKET_LEAGUE).limit(1);if(findErr)throw findErr;
  let league=found?.[0];if(!league){const {data:created,error:createErr}=await client.from('leagues').insert({name:TICKET_LEAGUE,country:'International',access_mode:'free',price_ugx:0,enabled:true}).select('id,access_mode,enabled').single();if(createErr)throw createErr;league=created;}
  if(!league.enabled)throw Error('Selected ticket category is disabled.');if(selectedPlan&&league.access_mode!=='paid')throw Error('Subscription plan league must be paid.');if(!selectedPlan&&league.access_mode!=='free')throw Error('Individual ticket category must be free.');
  const details='TICKET_V1\n'+picks.map((x,i)=>`${i+1}. ${x.home} vs ${x.away} (${x.league||'Other'}) — ${x.market}${x.details?' — '+x.details:''}`).join('\n');
- if(!confirm(`Publish ticket "${title}" with ${picks.length} picks for UGX ${price.toLocaleString()}?`))return;
+ if(!confirm(`Publish ticket "${title}" with ${picks.length} picks ${selectedPlan?'under the selected subscription plan':'for UGX '+price.toLocaleString()}?`))return;
  const {error}=await client.from('tips').insert({league_id:league.id,home_team:'🎟 '+title,away_team:picks.length+' selections',kickoff:null,draw_probability:null,predicted_score:'TICKET',analysis:details,access_mode:selectedPlan?'inherit':'paid',price_ugx:selectedPlan?0:price,published:true});if(error)throw error;
- status.textContent=(selectedPlan?'Ticket published for subscribers of the selected plan. ':'Ticket published for individual sale. ')+'Manage publication and deletion under Manage published matches.';$('ticketTitle').value='';$('ticketPicks').replaceChildren();ticketPickRow();await adminRefresh();await marketRefresh();
+ status.textContent=(selectedPlan?'Ticket published for subscribers of the selected plan. ':'Ticket published for individual sale. ')+'Manage publication and deletion under Manage published matches.';$('ticketTitle').value='';$('ticketPrice').value='';$('ticketPreviewArea').classList.add('hidden');$('ticketPicks').replaceChildren();ticketPickRow();await adminRefresh();await marketRefresh();
  }catch(e){status.textContent='Ticket not published: '+e.message}finally{btn.disabled=false}};
 
 $('publishTip').onclick=async()=>{if(!adminMode)return;const row={league_id:$('admLeagueSelect').value,home_team:$('admHome').value.trim(),away_team:$('admAway').value.trim(),kickoff:$('admKickoff').value?new Date($('admKickoff').value).toISOString():null,draw_probability:$('admProbability').value===''?null:Number($('admProbability').value),predicted_score:$('admScore').value.trim(),analysis:$('admAnalysis').value,access_mode:$('admMode').value,price_ugx:Number($('admPrice').value),published:true};if(!row.league_id||!row.home_team||!row.away_team)return alert('League and both teams required');const {error}=await client.from('tips').insert(row);if(error)alert(error.message);else{await adminRefresh();await marketRefresh()}};
 setInterval(()=>{if(client&&user)checkAdmin().catch(()=>{})},120000);
-const oldInit=initClient;initClient=async function(){await oldInit();await checkAdmin();await marketRefresh();await loadLeagueSubscriptionOptions();if(adminMode)await refreshSubscriptionPlans()};
+const oldInit=initClient;initClient=async function(){await oldInit();await checkAdmin();await marketRefresh();await loadLeagueSubscriptionOptions();if(adminMode)await refreshSubscriptionPlans();syncTicketPrice()};
 </script>
 <!-- Source block 2: retained from original application without logic changes. -->
 <script id="bundle-schema" type="text/plain">-- ===== supabase.sql =====
