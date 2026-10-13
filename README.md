@@ -23,3 +23,11 @@ The automated fixture estimator now uses home-only and away-only historical resu
 
 ## Compatibility
 The embedded Supabase and PesaJet backend sources are retained; exported copies are included for convenient review. Existing customer/admin UI elements and payment flow are retained. `config.js` is a new required deployment file for zero-configuration customer onboarding; if left as placeholders, the previous browser-local configuration fallback remains available.
+
+
+## Render Node.js Web Service deployment
+Upload the contents of this folder to your GitHub repository ROOT (replace the previous index.html only if this is the version you intend to deploy). Render: Runtime Node, Build `npm install`, Start `npm start`, Health `/health`. Set environment variables `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in Render Environment (publishable/anon key only). `config.js` is served dynamically from these public values. The static fallback `config.js` contains placeholders; configure the Render variables.
+
+**Do not set** `SUPABASE_SERVICE_ROLE_KEY`, PesaJet secrets or football provider tokens in browser config. Edge Functions must be deployed separately in Supabase; TypeScript files in GitHub are not executed by Node. This Node server only hosts the existing application; it does not move the prediction/payment logic to Node.
+
+Security: the Node server serves only the frontend files and `assets/`; SQL, README, and `.ts` are not publicly served. Render `_headers` is not processed by Node; equivalent headers are emitted by server.js.

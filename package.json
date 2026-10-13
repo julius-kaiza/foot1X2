@@ -1,0 +1,13 @@
+{
+  "name": "foot1x2",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Foot1X2 Render Node.js host",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js"
+  }
+}
